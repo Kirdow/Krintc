@@ -1,0 +1,7 @@
+# Files
+*.ppm
+demo.exe
+demo
+
+# Directories
+.vs/
