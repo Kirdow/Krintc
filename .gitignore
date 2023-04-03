@@ -5,3 +5,8 @@ demo
 
 # Directories
 .vs/
+target/
+run/
+
+# Excludes
+!tests/*.png

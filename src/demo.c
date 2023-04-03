@@ -3,7 +3,7 @@
 #include <string.h>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+#include "vendor/stb_image_write.h"
 
 #include "krintc.h"
 #include "point.h"

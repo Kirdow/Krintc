@@ -1,3 +1,7 @@
 #!/bin/sh
 
-./demo
+mkdir run
+cd run
+./../target/demo --testdir ../tests
+cd ..
+
