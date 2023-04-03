@@ -7,6 +7,9 @@
 #include "point.h"
 #include "strutil.h"
 #include "files.h"
+#include "args.h"
+
+#include "vendor/stb_image.h"
 
 size_t japan_example(void)
 {
@@ -93,28 +96,12 @@ bool file_copy_into(const char *srcdir, const char *dstdir, const char *filename
     return result;
 }
 
+bool run_test(const char *result, const char *expected);
+
 int main(int argc, const char *argv[])
 {
-    #define NEXTARG(x) do { i += 1; if (i >= argc) break; x = argv[i]; } while (0)
-    const char *test_dir = NULL;
-    bool record = false;
-    for (int i = 1; i < argc; i++)
-    {
-        const char* arg = NULL;
-        if (str_equals(argv[i], "--testdir"))
-        {
-            NEXTARG(arg);
-            test_dir = arg;
-        }
-        else if (str_equals(argv[i], "--record=true"))
-        {
-            record = true;
-        }
-        else if (str_equals(argv[i], "--record=false"))
-        {
-            record = false;
-        }
-    }
+    args_load(argc, argv);
+    const args_t *args = args_get();
 
     #define FILE_COUNT 2
     const char* files[FILE_COUNT] = {
@@ -130,13 +117,21 @@ int main(int argc, const char *argv[])
     if (!OK(japan_example())) LOG_NO_RETURN(-1, "Failed japan example!");
     if (!OK(line_example())) LOG_NO_RETURN(-1, "Failed line example!");
 
-    if (test_dir)
+    bool record = args->record;
+    bool test = args->test;
+    if (args->test_dir)
     {
-        if (!file_exists(test_dir))
+        if (!file_exists(args->test_dir))
         {
-            printf("Directory not found: '%s'!\n", test_dir);
+            printf("Directory not found: '%s'!\n", args->test_dir);
             record = false;
+            test = false;
         }
+    }
+    else
+    {
+        record = false;
+        test = false;
     }
 
     if (record)
@@ -144,13 +139,152 @@ int main(int argc, const char *argv[])
         for (int file_index = 0; file_index < FILE_COUNT; file_index++)
         {
             const char *filename = files[file_index];
-            if (!file_copy_into(".", "./../tests", filename))
+            if (!file_copy_into(".", args->test_dir, filename))
             {
-                printf("Failed to copy file './%s' into './../tests/%s'!\n", filename, filename);
+                char* dstpath = file_path_concat(args->test_dir, filename);
+                printf("Failed to copy file './%s' into '%s'!\n", filename, dstpath);
+                free(dstpath);
             }            
         }
     }
+    else if (test)
+    {
+        printf("Running tests...\n");
+        int fails = 0;
+        int success = 0;
+        int tests = 0;
+        for (int file_index = 0; file_index < FILE_COUNT; file_index++)
+        {
+            const char *filename = files[file_index];
+            printf("Running test for '%s'\n", filename);
+            char *result_file = file_path_concat(".", filename);
+            char *test_file = file_path_concat(args->test_dir, filename);
 
-    printf("Examples successful!");
+            if (!run_test(result_file, test_file))
+            {
+                printf("Test failed for '%s'\n", filename);
+                fails++;
+            }
+            else
+            {
+                success++;
+            }
+
+            free(result_file);
+            free(test_file);
+
+            tests++;
+        }
+
+        printf("\nAll tests completed.\n");
+        if (fails) printf("Failed tests: %d/%d (%d%%)\n", fails, tests, fails * 100 / tests);
+        if (success) printf("Successful tests: %d/%d (%d%%)\n", success, tests, success * 100 / tests);
+        printf("Test outcome: %s!\n", fails ? "FAILED" : "SUCCESS");
+    }
+
+    if (!test)
+    {
+        printf("Examples successful!\n");
+    }
+
     return 0;
+}
+
+bool load_png(const char *filename, uint32_t **pixels, size_t *pwidth, size_t *pheight)
+{
+    if (pixels == NULL || pwidth == NULL || pheight == NULL) return false;
+
+    int width, height, channels;
+    stbi_uc* data = stbi_load(filename, &width, &height, &channels, 4);
+    *pwidth = width;
+    *pheight = height;
+
+    if (channels != 4 && channels != 3)
+    {
+        printf("Unsupported image channel count: %d\n", channels);
+        stbi_image_free(data);
+        return false;
+    }
+
+    uint32_t *result = (uint32_t*)malloc(width * height * sizeof(uint32_t));
+
+    uint32_t *data32 = (uint32_t*)data;
+    size_t size = (size_t)(width * height);
+    for (size_t i = 0; i < size; i++)
+    {
+        uint32_t color = data32[i];
+        if (channels == 3)
+        {
+            color |= 0xFF000000;
+        }
+
+        result[i] = color;
+    }
+
+    stbi_image_free(data);
+
+    *pixels = result;
+
+    return true;
+}
+
+bool run_test(const char *result, const char *expected)
+{
+    if (!file_exists(result) || !file_exists(expected))
+    {
+        return false;
+    }
+
+    uint32_t *result_pixels = NULL;
+    uint32_t *expected_pixels = NULL;
+
+    size_t result_width, result_height, expected_width, expected_height;
+
+    if (!load_png(result, &result_pixels, &result_width, &result_height))
+    {
+        printf("Failed to load input png!\n");
+        return false;
+    }
+
+    if (!load_png(expected, &expected_pixels, &expected_width, &expected_height))
+    {
+        free(result_pixels);
+        printf("Failed to load expected png!\n");
+        return false;
+    }
+
+    bool success = true;
+
+    if (result_width != expected_width)
+    {
+        printf("Image width does not match!\n");
+        success = false;
+    }
+
+    if (result_height != expected_height)
+    {
+        printf("Image height does not match!\n");
+        success = false;
+    }
+
+    if (!success)
+    {
+        free(result_pixels);
+        free(expected_pixels);
+        return false;
+    }
+
+    for (size_t i = 0; i < result_width * result_height; i++)
+    {
+        if (result_pixels[i] != expected_pixels[i])
+        {
+            success = false;
+            break;
+        }
+    }
+
+    free(result_pixels);
+    free(expected_pixels);
+    
+    return success;
 }
