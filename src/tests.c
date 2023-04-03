@@ -10,6 +10,7 @@
 #endif
 
 #include "files.h"
+#include "mem.h"
 
 static tests_t *tests_ptr = NULL;
 
@@ -20,7 +21,7 @@ tests_t *tests_load()
     const args_t *args = args_get();
     if (!args->test_dir) return NULL;
 
-    tests_t *ptr = (tests_t*)malloc(sizeof(tests_t));
+    tests_t *ptr = (tests_t*)mem_alloc(sizeof(tests_t));
     ptr->test_dir = args->test_dir;
     
     ptrlist_t *data = ptrlist_create();
@@ -37,7 +38,7 @@ tests_t *tests_load()
     }
 
     do {
-        char *fname = malloc(strlen(file_data.cFileName) + 1);
+        char *fname = mem_alloc(strlen(file_data.cFileName) + 1);
         strcpy(fname, file_data.cFileName);
         ptrlist_add_element(data, fname);
     } while (FindNextFile(handle, &file_data) != 0);
@@ -56,7 +57,7 @@ tests_t *tests_load()
     {
         if (entry->d_type == DT_REG && strcmp(entry->d_name + strlen(entry->d_name) - strlen(ext), ext) == 0)
         {
-            char *fname = malloc(strlen(entry->d_name) + 1);
+            char *fname = mem_alloc(strlen(entry->d_name) + 1);
             strcpy(fname, entry->d_name);
             ptrlist_add_element(data, fname);
         }
@@ -68,7 +69,7 @@ tests_t *tests_load()
 
     tests_ptr = ptr;
 
-    free(dir_path);
+    mem_free(dir_path);
 
     return tests_ptr;
 }
@@ -81,11 +82,11 @@ void tests_free()
     while (data->len > 0)
     {
         char *str = ptrlist_pop_type(char *, data);
-        free(str);
+        mem_free(str);
     }
 
-    tests_ptr->data = NULL;
-    free(tests_ptr);
+    ptrlist_free(&tests_ptr->data);
+    mem_free(tests_ptr);
     tests_ptr = NULL;
 }
 

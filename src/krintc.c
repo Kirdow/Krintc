@@ -1,5 +1,6 @@
 #include "krintc.h"
 #include "vendor/stb_image_write.h"
+#include "mem.h"
 
 void krintc_fill(u32 *pixels, uSize pixel_width, uSize pixel_height, u32 color)
 {
@@ -134,7 +135,7 @@ void krintc_implode_rgb(u32 *pixel, u32 red, u32 green, u32 blue)
 
 uBool krintc_alloc_data(u32 **pixels, uSize pixel_width, uSize pixel_height)
 {
-    u32 *data = (u32*)malloc(sizeof(u32) * pixel_width * pixel_height);
+    u32 *data = (u32*)mem_alloc(sizeof(u32) * pixel_width * pixel_height);
     if (data == NULL) return false;
 
     *pixels = data;
@@ -146,7 +147,7 @@ uBool krintc_free_data(u32 **pixels)
     if (pixels == NULL) return false;
     u32 *data = *pixels;
     if (data == NULL) return true;
-    free(data);
+    mem_free(data);
     *pixels = NULL;
     return true;
 }

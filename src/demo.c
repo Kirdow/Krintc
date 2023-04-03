@@ -9,6 +9,7 @@
 #include "files.h"
 #include "args.h"
 #include "tests.h"
+#include "mem.h"
 
 #include "vendor/stb_image.h"
 
@@ -83,16 +84,16 @@ bool file_copy_into(const char *srcdir, const char *dstdir, const char *filename
 
     if (!file_exists(srcfile))
     {
-        free(srcfile);
-        free(dstfile);
+        mem_free(srcfile);
+        mem_free(dstfile);
 
         return false;
     }
 
     bool result = file_copy(srcfile, dstfile);
 
-    free(srcfile);
-    free(dstfile);
+    mem_free(srcfile);
+    mem_free(dstfile);
 
     return result;
 }
@@ -141,7 +142,7 @@ int main(int argc, const char *argv[])
             {
                 char* dstpath = file_path_concat(args->test_dir, filename);
                 printf("Failed to copy file './%s' into '%s'!\n", filename, dstpath);
-                free(dstpath);
+                mem_free(dstpath);
             }            
         }
     }
@@ -168,8 +169,8 @@ int main(int argc, const char *argv[])
                 success++;
             }
 
-            free(result_file);
-            free(test_file);
+            mem_free(result_file);
+            mem_free(test_file);
 
             tests++;
         }
@@ -184,6 +185,11 @@ int main(int argc, const char *argv[])
     {
         printf("Examples successful!\n");
     }
+
+    tests_free();
+    args_free();
+
+    mem_validate(MEMV_ANY);
 
     return 0;
 }
@@ -204,7 +210,7 @@ bool load_png(const char *filename, uint32_t **pixels, size_t *pwidth, size_t *p
         return false;
     }
 
-    uint32_t *result = (uint32_t*)malloc(width * height * sizeof(uint32_t));
+    uint32_t *result = (uint32_t*)mem_alloc(width * height * sizeof(uint32_t));
 
     uint32_t *data32 = (uint32_t*)data;
     size_t size = (size_t)(width * height);
@@ -246,7 +252,7 @@ bool run_test(const char *result, const char *expected)
 
     if (!load_png(expected, &expected_pixels, &expected_width, &expected_height))
     {
-        free(result_pixels);
+        mem_free(result_pixels);
         printf("Failed to load expected png!\n");
         return false;
     }
@@ -267,8 +273,8 @@ bool run_test(const char *result, const char *expected)
 
     if (!success)
     {
-        free(result_pixels);
-        free(expected_pixels);
+        mem_free(result_pixels);
+        mem_free(expected_pixels);
         return false;
     }
 
@@ -281,8 +287,8 @@ bool run_test(const char *result, const char *expected)
         }
     }
 
-    free(result_pixels);
-    free(expected_pixels);
+    mem_free(result_pixels);
+    mem_free(expected_pixels);
     
     return success;
 }

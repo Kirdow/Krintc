@@ -1,5 +1,6 @@
 #include "args.h"
 #include "strutil.h"
+#include "mem.h"
 
 #include <stdlib.h>
 #define NEXTARG(x) do { i += 1; if (i >= argc) break; x = argv[i]; } while (0);
@@ -11,15 +12,23 @@ const args_t *args_get()
     return args;
 }
 
+void args_free()
+{
+    if (!args) return;
+
+    mem_free(args);
+    args = NULL;
+}
+
 void args_load(int argc, const char *argv[])
 {
     if (args)
     {
-        free(args);
+        mem_free(args);
         args = NULL;
     }
 
-    args = (args_t*)malloc(sizeof(args_t));
+    args = (args_t*)mem_alloc(sizeof(args_t));
     args->test_dir = NULL;
     args->record = false;
     args->test = false;

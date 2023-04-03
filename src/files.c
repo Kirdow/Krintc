@@ -6,6 +6,7 @@
 #include <stdbool.h>
 
 #include <string.h>
+#include "mem.h"
 
 bool file_copy(const char *srcname, const char *dstname)
 {
@@ -48,12 +49,12 @@ char *file_path_concat(const char *dirname, const char *filename)
 
     if (dirname[len - 1] == '/')
     {
-        file = malloc(len + strlen(filename) + 1);
+        file = mem_alloc(len + strlen(filename) + 1);
         strcpy(file, dirname);
     }
     else
     {
-        file = malloc(len + strlen(filename) + 2);
+        file = mem_alloc(len + strlen(filename) + 2);
         strcpy(file, dirname);
         strcat(file, "/");
     }

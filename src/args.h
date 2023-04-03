@@ -11,5 +11,6 @@ typedef struct {
 
 void args_load(int argc, const char *argv[]);
 const args_t *args_get();
+void args_free();
 
 #endif
