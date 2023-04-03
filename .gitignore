@@ -5,6 +5,7 @@ demo
 
 # Directories
 .vs/
+.vscode/
 target/
 run/
 

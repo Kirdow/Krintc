@@ -1,7 +1,9 @@
 #!/bin/sh
 
-mkdir run
-cd run
-./../target/demo --testdir ../tests
-cd ..
+if [[ ! -d run ]]; then
+    mkdir run
+fi
 
+cd run
+./../target/demo --testdir ../tests "$@"
+cd ..

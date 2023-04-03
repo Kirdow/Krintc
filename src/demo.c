@@ -1,20 +1,12 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "vendor/stb_image_write.h"
+#include <math.h>
 
 #include "krintc.h"
 #include "point.h"
-
-void write_png_image(const uint32_t *pixels, size_t pixel_width, size_t pixel_height, const char* filename)
-{
-    if (!stbi_write_png(filename, (int)pixel_width, (int)pixel_height, 4, pixels, sizeof(uint32_t) * pixel_width))
-    {
-        printf("Failed to write png to file!");
-    }
-}
+#include "strutil.h"
+#include "files.h"
 
 size_t japan_example(void)
 {
@@ -27,7 +19,10 @@ size_t japan_example(void)
     krintc_fill(pixels, width, height, 0xFFFFFF);
     krintc_fill_circle(pixels, width, height, (i32)(width / 2), (i32)(height / 2), (i32)(dotSize / 2), 0x0000FF);
 
-    write_png_image(pixels, width, height, "japan.png");
+    if (!krintc_save_disk_image(pixels, width, height, "japan.png"))
+    {
+        printf("Failed to save japan.png!\n");
+    }
 
     krintc_free_data(&pixels);
     return 0;
@@ -64,7 +59,10 @@ size_t line_example(void)
         krintc_line(pixels, width, height, current.x, current.y, next.x, next.y, 0xFFFFFF00);
     }    
 
-    write_png_image(pixels, width, height, "lines.png");
+    if (!krintc_save_disk_image(pixels, width, height, "lines.png"))
+    {
+        printf("Failed to save lines.png!\n");
+    }
 
     krintc_free_data(&pixels);
     return 0;
@@ -74,10 +72,84 @@ size_t line_example(void)
 #define LOG_NO_RETURN(id, value) do { printf("Exit(%d): %s\n", id, value); return id; } while(0)
 #define LOG_RETURN(value) LOG_NO_RETURN(0, value)
 
-int main(void)
+bool file_copy_into(const char *srcdir, const char *dstdir, const char *filename)
 {
+    char *srcfile = file_path_concat(srcdir, filename);
+    char *dstfile = file_path_concat(dstdir, filename);
+
+    if (!file_exists(srcfile))
+    {
+        free(srcfile);
+        free(dstfile);
+
+        return false;
+    }
+
+    bool result = file_copy(srcfile, dstfile);
+
+    free(srcfile);
+    free(dstfile);
+
+    return result;
+}
+
+int main(int argc, const char *argv[])
+{
+    #define NEXTARG(x) do { i += 1; if (i >= argc) break; x = argv[i]; } while (0)
+    const char *test_dir = NULL;
+    bool record = false;
+    for (int i = 1; i < argc; i++)
+    {
+        const char* arg = NULL;
+        if (str_equals(argv[i], "--testdir"))
+        {
+            NEXTARG(arg);
+            test_dir = arg;
+        }
+        else if (str_equals(argv[i], "--record=true"))
+        {
+            record = true;
+        }
+        else if (str_equals(argv[i], "--record=false"))
+        {
+            record = false;
+        }
+    }
+
+    #define FILE_COUNT 2
+    const char* files[FILE_COUNT] = {
+        "japan.png",
+        "lines.png"
+    };
+
+    for (int file_index = 0; file_index < FILE_COUNT; file_index++)
+    {
+        file_delete(files[file_index]);
+    }
+
     if (!OK(japan_example())) LOG_NO_RETURN(-1, "Failed japan example!");
     if (!OK(line_example())) LOG_NO_RETURN(-1, "Failed line example!");
+
+    if (test_dir)
+    {
+        if (!file_exists(test_dir))
+        {
+            printf("Directory not found: '%s'!\n", test_dir);
+            record = false;
+        }
+    }
+
+    if (record)
+    {
+        for (int file_index = 0; file_index < FILE_COUNT; file_index++)
+        {
+            const char *filename = files[file_index];
+            if (!file_copy_into(".", "./../tests", filename))
+            {
+                printf("Failed to copy file './%s' into './../tests/%s'!\n", filename, filename);
+            }            
+        }
+    }
 
     printf("Examples successful!");
     return 0;

@@ -22,4 +22,6 @@ void krintc_implode_rgb(u32 *pixel, u32 red, u32 green, u32 blue);
 uBool krintc_alloc_data(u32 **pixels, uSize pixel_width, uSize pixel_height);
 uBool krintc_free_data(u32 **pixels);
 
+uBool krintc_save_disk_image(const u32 *pixels, uSize pixel_width, uSize pixel_height, const c8 *filename);
+
 #endif // _KRINT_C_

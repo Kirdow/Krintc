@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+typedef char c8;
+typedef unsigned char uc8;
+
 typedef int8_t i8;
 typedef uint8_t u8;
 

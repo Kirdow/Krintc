@@ -3,7 +3,15 @@
 CC="${CXX:-cc}"
 CSTDVER="c11"
 CFLAGS="-Wall -Wextra -std=${CSTDVER}"
-SRC="src/demo.c src/krintc.c src/point.c"
+CDEF=""
+SRC="src/vendor/stb_impl.c src/files.c src/demo.c src/krintc.c src/point.c"
 
-mkdir target
-$CC $CFLAGS -o target/demo $SRC
+if [[ "$OSTYPE" == "win32" ]]; then
+    CDEF="$CDEF -DWIN32"
+fi
+
+if [[ ! -d target ]]; then
+    mkdir target
+fi
+
+$CC $CFLAGS $CDEF -o target/demo $SRC

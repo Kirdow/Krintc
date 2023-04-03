@@ -1,4 +1,5 @@
 #include "krintc.h"
+#include "vendor/stb_image_write.h"
 
 void krintc_fill(u32 *pixels, uSize pixel_width, uSize pixel_height, u32 color)
 {
@@ -149,3 +150,14 @@ uBool krintc_free_data(u32 **pixels)
     *pixels = NULL;
     return true;
 }
+
+uBool krintc_save_disk_image(const u32 *pixels, uSize pixel_width, uSize pixel_height, const c8 *filename)
+{
+    if (!stbi_write_png(filename, (int)pixel_width, (int)pixel_height, 4, pixels, sizeof(uint32_t) * pixel_width))
+    {
+        return false;
+    }
+
+    return true;
+}
+
