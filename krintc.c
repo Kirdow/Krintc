@@ -1,11 +1,4 @@
-#ifndef _KRINT_C_
-#define _KRINT_C_
-
-#include "krintdef.h"
-#include <stdio.h>
-#include <stdlib.h>
-
-#define ACOLOR(color) ((color) | 0xFF << (3*8));
+#include "krintc.h"
 
 void krintc_fill(u32 *pixels, uSize pixel_width, uSize pixel_height, u32 color)
 {
@@ -61,6 +54,58 @@ void krintc_fill_circle(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 
     }
 }
 
+void krintc_line(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32 y0, i32 x1, i32 y1, u32 color)
+{
+    i32 dx = x1 - x0;
+    i32 dy = y1 - y0;
+
+    if (KRINTC_ABS(i32, dx) >= KRINTC_ABS(i32, dy))
+    {
+        if (x0 > x1)
+        {
+            KRINTC_SWAP(int, x0, x1);
+            KRINTC_SWAP(int, y0, y1);
+        }
+
+        for (i32 x = x0; x <= x1; x++)
+        {
+            if (x < 0 || x >= (i32)pixel_width) continue;
+            uSize xp = (uSize)x;
+
+            i32 y = y0 + (x - x0) * dy / dx;
+            if (y < 0 || y >= (i32)pixel_height) continue;
+            uSize yp = (uSize)y;
+
+            pixels[pixel_width * yp + xp] = ACOLOR(color);
+        }
+    }
+    else if (KRINTC_ABS(i32, dx) < KRINTC_ABS(i32, dy))
+    {
+        if (y0 > y1)
+        {
+            KRINTC_SWAP(int, x0, x1);
+            KRINTC_SWAP(int, y0, y1);
+        }
+
+        for (i32 y = y0; y <= y1; y++)
+        {
+            if (y < 0 || y >= (i32)pixel_height) continue;
+            uSize yp = (uSize)y;
+
+            i32 x = x0 + (y - y0) * dx / dy;
+            if (x < 0 || x >= (i32)pixel_width) continue;
+            uSize xp = (uSize)x;
+
+            pixels[pixel_width * yp + xp] = ACOLOR(color);
+        }
+    }
+    else
+    {
+        if (KRINTC_ABS(i32, dx) < KRINTC_ABS(i32, dy)) NO_IMPL("dx < dy");
+        else NO_IMPL("dx = dy");
+    }
+}
+
 void krintc_plot(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32 y0, u32 color)
 {
     if (x0 < 0 || x0 >= (i32)pixel_width) return;
@@ -104,5 +149,3 @@ uBool krintc_free_data(u32 **pixels)
     *pixels = NULL;
     return true;
 }
-
-#endif // _KRINT_C_

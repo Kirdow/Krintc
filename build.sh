@@ -1,3 +1,8 @@
 #!/bin/sh
 
-cc -Wall -Wextra -o demo demo.c
+CC="${CXX:-cc}"
+CFLAGS="-Wall -Wextra -std=c11"
+SRC="demo.c krintc.c point.c"
+
+
+$CC $CFLAGS -o demo $SRC
