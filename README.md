@@ -1,4 +1,4 @@
-# Krint.c
+# Krint.c [<img src="https://img.shields.io/github/license/Kirdow/Krintc?style=flat-square">](https://github.com/Kirdow/Krintc/blob/master/LICENSE)
 Graphics library by Kirdow made in C
 
 ## Build & Run
@@ -17,11 +17,13 @@ Then run the demo
 The demo currently generates tests when run with --record=true,
 these are then saved to [``./tests/``](./tests/) and added to this repository.
 When executing the demo using ``./run.sh`` a directory called ``./run`` gets created,
-and any generated files are created in there. These will at some point be matched at
-runtime in the demo towards the files in ``./tests/`` to make sure the code works as
-intended. For the most part, the images in ``./run/`` should match the ones in ``./tests/``.
+and any generated files are created in there.
 
-Anyhow, here are a few examples from the [``./tests/``](./tests/) directory.
+If you were to run the code using ``./run.sh --record=true`` you would record new tests from scratch and overwrite any existing tests with new ones.
+
+If you want to test any changes against existsing tests, run the program using ``./run.sh --test=true``.
+
+Here are a few examples from the [``./tests/``](./tests/) directory.
 
 ## japan.png
 This generates a correct Japan flag
@@ -33,5 +35,11 @@ This generates lines in a circular-ish shape
 
 ![circular lines test](./tests/lines.png "Circular Lines Test")
 
+# Contributions
+Any help is welcome, but please don't make any major pull requests unless I'm specifically asking for it or approved it in an issue. If you got any questions or thoughts, make an issue.
+
 # Credits
 Inspired by [Olive.c](https://github.com/tsoding/olive.c) by [Tsoding](https://www.youtube.com/@TsodingDaily).
+
+# License
+This project uses [MIT License](https://github.com/Kirdow/Krintc/blob/master/LICENSE).
