@@ -8,6 +8,7 @@
 #include "strutil.h"
 #include "files.h"
 #include "args.h"
+#include "tests.h"
 
 #include "vendor/stb_image.h"
 
@@ -101,17 +102,14 @@ bool run_test(const char *result, const char *expected);
 int main(int argc, const char *argv[])
 {
     args_load(argc, argv);
+    tests_load();
     const args_t *args = args_get();
 
-    #define FILE_COUNT 2
-    const char* files[FILE_COUNT] = {
-        "japan.png",
-        "lines.png"
-    };
+    size_t test_count = tests_get_file_count();
 
-    for (int file_index = 0; file_index < FILE_COUNT; file_index++)
+    for (size_t file_index = 0; file_index < test_count; file_index++)
     {
-        file_delete(files[file_index]);
+        file_delete(tests_get_file(file_index));
     }
 
     if (!OK(japan_example())) LOG_NO_RETURN(-1, "Failed japan example!");
@@ -136,9 +134,9 @@ int main(int argc, const char *argv[])
 
     if (record)
     {
-        for (int file_index = 0; file_index < FILE_COUNT; file_index++)
+        for (size_t file_index = 0; file_index < test_count; file_index++)
         {
-            const char *filename = files[file_index];
+            const char *filename = tests_get_file(file_index);
             if (!file_copy_into(".", args->test_dir, filename))
             {
                 char* dstpath = file_path_concat(args->test_dir, filename);
@@ -153,9 +151,9 @@ int main(int argc, const char *argv[])
         int fails = 0;
         int success = 0;
         int tests = 0;
-        for (int file_index = 0; file_index < FILE_COUNT; file_index++)
+        for (size_t file_index = 0; file_index < test_count; file_index++)
         {
-            const char *filename = files[file_index];
+            const char *filename = tests_get_file(file_index);
             printf("Running test for '%s'\n", filename);
             char *result_file = file_path_concat(".", filename);
             char *test_file = file_path_concat(args->test_dir, filename);
