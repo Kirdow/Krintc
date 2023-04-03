@@ -1,5 +1,13 @@
 # Krint.c [<img src="https://img.shields.io/github/license/Kirdow/Krintc?style=flat-square">](https://github.com/Kirdow/Krintc/blob/master/LICENSE)
-Graphics library by Kirdow made in C
+Graphics library by Kirdow made in C.
+
+Krint.c is a purely software based renderer made in C using the C11 standard. It's made specifically under windows but tries to support POSIX and UNIX whenever possible.
+
+**Features:**
+* Fill Clear
+* Fill Rect
+* Fill Circle
+* Draw Line
 
 ## Build & Run
 
