@@ -49,7 +49,7 @@ This generates 6 triangles in a hexagon
 ![hexagon triangles test](./tests/triangle.png "Hexagon Triangles Test")
 
 ## alphablend.png
-This uses the alpha channel to blend the shapens with each other
+This uses the alpha channel to blend the shapes with each other
 
 ![alpha blend test](./tests/alphablend.png "Alpha Blend Test")
 
