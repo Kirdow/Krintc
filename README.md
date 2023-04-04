@@ -43,6 +43,16 @@ This generates lines in a circular-ish shape
 
 ![circular lines test](./tests/lines.png "Circular Lines Test")
 
+## triangle.png
+This generates 6 triangles in a hexagon
+
+![hexagon triangles test](./tests/triangle.png "Hexagon Triangles Test")
+
+## alphablend.png
+This uses the alpha channel to blend the shapens with each other
+
+![alpha blend test](./tests/alphablend.png "Alpha Blend Test")
+
 # Contributions
 Any help is welcome, but please don't make any major pull requests unless I'm specifically asking for it or approved it in an issue. If you got any questions or thoughts, make an issue.
 
