@@ -126,7 +126,7 @@ void krintc_fill_triangle(u32 *pixels, uSize pixel_width, uSize pixel_height, i3
 		krintc_line(pixels, pixel_width, pixel_height, xLeft, y, xRight - 1, y, color);
 	}
 
-	for (i32 i = y3; i <= y2; ++i)
+	for (i32 i = y3 + 1; i <= y2; ++i)
 	{
 		i32 xLeft = x3 + safe_div(x2 - x3, i - y3, y2 - y3);
 		i32 xRight = x1 + safe_div(x2 - x1, i - y3, y2 - y3);

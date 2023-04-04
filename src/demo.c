@@ -50,7 +50,7 @@ size_t line_example(void)
     uSize height = 200;
     if (!krintc_alloc_data(&pixels, width, height)) return -1;
 
-    krintc_fill(pixels, width, height, 0);
+    krintc_fill(pixels, width, height, 0xFF000000);
     
     point_t basePosPoint = point_create(100, 100);
     for (u32 index = 0; index < 18; index++)
@@ -80,7 +80,7 @@ size_t triangle_example(void)
 	uSize height = 800;
 	if (!krintc_alloc_data(&pixels, width, height)) return -1;
 
-	krintc_fill(pixels, width, height, 0);
+	krintc_fill(pixels, width, height, 0xFF000000);
 
 	uSize w2 = width / 2;
 	uSize h2 = height / 2;
