@@ -62,10 +62,14 @@ tests_t *tests_load()
 	while ((entry = readdir(dir)) != NULL)
     {
 		if (strstr(entry->d_name, ".png") != NULL) {
-			if (stat(entry->d_name, &info) != 0) {
+			char *fstatname = file_path_concat(ptr->test_dir, entry->d_name);
+			if (stat(fstatname, &info) != 0) {
 				printf("error stat: %s\n", entry->d_name);
+				mem_free(fstatname);
 				return NULL;
 			}
+			mem_free(fstatname);
+			
 			if (S_ISREG(info.st_mode)) {
 				char *fname = mem_alloc(strlen(entry->d_name) + 1);
 				strcpy(fname, entry->d_name);
