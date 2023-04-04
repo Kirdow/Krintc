@@ -33,9 +33,9 @@ size_t japan_example(void)
     return 0;
 }
 
-point_t get_point(u32 index, u32 size)
+point_t get_point(u32 index, u32 size, u32 total_index)
 {
-    f32 angleBase = 3.141592f / 9.0f;
+    f32 angleBase = 3.141592f / ((f32)total_index / 2.0f);
     f32 angle = angleBase * index;
     f32 x = cosf(angle);
     f32 y = sinf(angle);
@@ -55,8 +55,8 @@ size_t line_example(void)
     point_t basePosPoint = point_create(100, 100);
     for (u32 index = 0; index < 18; index++)
     {
-        point_t current = get_point(index, 80);
-        point_t next = get_point((index + 1) % 18, 80);
+        point_t current = get_point(index, 80, 18);
+        point_t next = get_point((index + 1) % 18, 80, 18);
         point_add_self_point(&current, basePosPoint);
         point_add_self_point(&next, basePosPoint);
 
@@ -76,15 +76,29 @@ size_t line_example(void)
 size_t triangle_example(void)
 {
 	u32 *pixels = NULL;
-	uSize width = 400;
-	uSize height = 200;
+	uSize width = 800;
+	uSize height = 800;
 	if (!krintc_alloc_data(&pixels, width, height)) return -1;
 
 	krintc_fill(pixels, width, height, 0);
 
-	krintc_fill_triangle(pixels, width, height, 100, 50, 160, 155, 80, 90, 0xFFFFFF);
-	krintc_fill_triangle(pixels, width, height, 300, 50, 360, 90, 280, 155, 0xFFFFFF);
+	uSize w2 = width / 2;
+	uSize h2 = height / 2;
 
+	point_t basePosPoint = point_create(w2, h2);
+	for (u32 index = 0; index < 6; index++)
+	{
+		// rolled out version of (w2 + h2) / 2 * 4 / 5
+		u32 radius = (w2 + h2) * 2 / 5;
+
+		point_t current = get_point(index, radius, 6);
+		point_t next = get_point((index + 1) % 6, radius, 6);
+		point_add_self_point(&current, basePosPoint);
+		point_add_self_point(&next, basePosPoint);
+
+		krintc_fill_triangle(pixels, width, height, w2, h2, current.x, current.y, next.x, next.y, index % 2 ? 0xFF00AAAA : 0xFF00FFFF);
+	}
+	
 	if (!krintc_save_disk_image(pixels, width, height, "triangle.png"))
 	{
 		printf("Failed to save triangle.png!\n");
@@ -157,16 +171,20 @@ int main(int argc, const char *argv[])
 
     if (record)
     {
-        for (size_t file_index = 0; file_index < test_count; file_index++)
+		ptrlist_t *image_files = file_list_dir(".", ".png");
+		size_t image_count = file_list_size(image_files);
+        for (size_t file_index = 0; file_index < image_count; file_index++)
         {
-            const char *filename = tests_get_file(file_index);
+			const char *filename = file_list_get(image_files, file_index);
             if (!file_copy_into(".", args->test_dir, filename))
             {
                 char* dstpath = file_path_concat(args->test_dir, filename);
                 printf("Failed to copy file './%s' into '%s'!\n", filename, dstpath);
                 mem_free(dstpath);
-            }            
+            }
         }
+
+		file_list_dir_free(&image_files);
     }
     else if (test)
     {

@@ -56,6 +56,16 @@ void krintc_fill_circle(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 
     }
 }
 
+static i32 safe_div(i32 a, i32 b, i32 c)
+{
+	if (c == 0)
+	{
+		return a;
+	}
+
+	return a * b / c;
+}
+
 void krintc_fill_triangle(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32 y0, i32 x1, i32 y1, i32 x2, i32 y2, u32 color)
 {
 	if (y1 < y0)
@@ -69,27 +79,51 @@ void krintc_fill_triangle(u32 *pixels, uSize pixel_width, uSize pixel_height, i3
 		KRINTC_SWAP(i32, y1, y2);
 		KRINTC_SWAP(i32, x1, x2);
 	}
+	
+	i32 x3 = x0 + safe_div(x2 - x0, y1 - y0, y2 - y0);
+	i32 y3 = y0 + safe_div(y2 - y0, y1 - y0, y2 - y0);
 
-	i32 x3 = x0 + (x2 - x0) * (y1 - y0) / (y2 - y0);
-	i32 y3 = y0 + (y2 - y0) * (y1 - y0) / (y2 - y0);
+	if (y0 == y2)
+	{
+		KRINTC_SWAP(i32, x0, x1);
+		KRINTC_SWAP(i32, y0, y1);
+
+			
+		x3 = x0 + safe_div(x2 - x0, y1 - y0, y2 - y0);
+		y3 = y0 + safe_div(y2 - y0, y1 - y0, y2 - y0);
+	}
 
 	for (i32 i = y0; i <= y3; ++i)
 	{
-		i32 xLeft = x0 + (x2 - x0) * (i - y0) / (y2 - y0);
-		i32 xRight = x0 + (x1 - x0) * (i - y0) / (y1 - y0);
-		i32 y = y0 + (y2 - y0) * (i - y0) / (y2 - y0);
+		i32 xLeft = x0 + safe_div(x2 - x0, i - y0, y2 - y0);
+		i32 xRight = x0 + safe_div(x1 - x0, i - y0, y1 - y0);
+		i32 y = y0 + safe_div(y2 - y0, i - y0, y2 - y0);
+		if (xLeft > xRight) KRINTC_SWAP(i32, xLeft, xRight);
 
-		krintc_line(pixels, pixel_width, pixel_height, xLeft, y, xRight, y, color);
+		krintc_line(pixels, pixel_width, pixel_height, xLeft, y, xRight - 1, y, color);
 	}
 
 	for (i32 i = y3; i <= y2; ++i)
 	{
-		i32 xLeft = x3 + (x2 - x3) * (i - y3) / (y2 - y3);
-		i32 xRight = x1 + (x2 - x1) * (i - y3) / (y2 - y3);
-		i32 y = y3 + (y2 - y3) * (i - y3) / (y2 - y3);
+		i32 xLeft = x3 + safe_div(x2 - x3, i - y3, y2 - y3);
+		i32 xRight = x1 + safe_div(x2 - x1, i - y3, y2 - y3);
+		i32 y = y3 + safe_div(y2 - y3, i - y3, y2 - y3);
+		if (xLeft > xRight) KRINTC_SWAP(i32, xLeft, xRight);
 
-		krintc_line(pixels, pixel_width, pixel_height, xLeft, y, xRight, y, color);
+		krintc_line(pixels, pixel_width, pixel_height, xLeft, y, xRight - 1, y, color);
 	}
+
+#if 0 // for debugging triangles
+	krintc_line(pixels, pixel_width, pixel_height, x0, y0, x2, y2, 0xFF0000FF);
+	krintc_line(pixels, pixel_width, pixel_height, x0, y0, x1, y1, 0xFF00FF00);
+	krintc_line(pixels, pixel_width, pixel_height, x1, y1, x2, y2, 0xFFFF0000);
+
+	krintc_fill_circle(pixels, pixel_width, pixel_height, x3, y3, 6, 0xFFFF00FF);
+
+	krintc_fill_circle(pixels, pixel_width, pixel_height, x0, y0, 4, 0xFF0000FF);
+	krintc_fill_circle(pixels, pixel_width, pixel_height, x1, y1, 4, 0xFF00FF00);
+	krintc_fill_circle(pixels, pixel_width, pixel_height, x2, y2, 4, 0xFFFF0000);
+#endif
 }
 
 void krintc_line(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32 y0, i32 x1, i32 y1, u32 color)
