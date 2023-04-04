@@ -7,7 +7,13 @@ Krint.c is a purely software based renderer made in C using the C11 standard. It
 * Fill Clear
 * Fill Rect
 * Fill Circle
+* Fill Triangle
 * Draw Line
+* Alpha Blending
+
+**Planned:**
+* Anti Aliasing
+* 3D Projection (probably not too advanced for a start)
 
 ## Build & Run
 
