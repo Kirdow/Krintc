@@ -56,6 +56,42 @@ void krintc_fill_circle(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 
     }
 }
 
+void krintc_fill_triangle(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32 y0, i32 x1, i32 y1, i32 x2, i32 y2, u32 color)
+{
+	if (y1 < y0)
+	{
+		KRINTC_SWAP(i32, y0, y1);
+		KRINTC_SWAP(i32, x0, x1);
+	}
+
+	if (y2 < y1)
+	{
+		KRINTC_SWAP(i32, y1, y2);
+		KRINTC_SWAP(i32, x1, x2);
+	}
+
+	i32 x3 = x0 + (x2 - x0) * (y1 - y0) / (y2 - y0);
+	i32 y3 = y0 + (y2 - y0) * (y1 - y0) / (y2 - y0);
+
+	for (i32 i = y0; i <= y3; ++i)
+	{
+		i32 xLeft = x0 + (x2 - x0) * (i - y0) / (y2 - y0);
+		i32 xRight = x0 + (x1 - x0) * (i - y0) / (y1 - y0);
+		i32 y = y0 + (y2 - y0) * (i - y0) / (y2 - y0);
+
+		krintc_line(pixels, pixel_width, pixel_height, xLeft, y, xRight, y, color);
+	}
+
+	for (i32 i = y3; i <= y2; ++i)
+	{
+		i32 xLeft = x3 + (x2 - x3) * (i - y3) / (y2 - y3);
+		i32 xRight = x1 + (x2 - x1) * (i - y3) / (y2 - y3);
+		i32 y = y3 + (y2 - y3) * (i - y3) / (y2 - y3);
+
+		krintc_line(pixels, pixel_width, pixel_height, xLeft, y, xRight, y, color);
+	}
+}
+
 void krintc_line(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32 y0, i32 x1, i32 y1, u32 color)
 {
     i32 dx = x1 - x0;
@@ -74,7 +110,7 @@ void krintc_line(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32
             if (x < 0 || x >= (i32)pixel_width) continue;
             uSize xp = (uSize)x;
 
-            i32 y = y0 + (x - x0) * dy / dx;
+			i32 y = y0 + ((dx == 0) ? 0 : ((x - x0) * dy / dx));
             if (y < 0 || y >= (i32)pixel_height) continue;
             uSize yp = (uSize)y;
 
@@ -94,7 +130,7 @@ void krintc_line(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32
             if (y < 0 || y >= (i32)pixel_height) continue;
             uSize yp = (uSize)y;
 
-            i32 x = x0 + (y - y0) * dx / dy;
+			i32 x = x0 + ((dy == 0) ? 0 : ((y - y0) * dx / dy));
             if (x < 0 || x >= (i32)pixel_width) continue;
             uSize xp = (uSize)x;
 

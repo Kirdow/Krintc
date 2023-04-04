@@ -59,6 +59,16 @@ void krintc_fill_rect(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0
 void krintc_fill_circle(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 xc, i32 yc, i32 radius, u32 color);
 
 /*
+ * fill a triangle inside the buffer with a specific color
+ * param pixels, pixel_width, pixel_height - buffer definition
+ * param x0, y0 - first corner
+ * param x1, y1 - second corner
+ * param x2, y2 - third corner
+ * param color - color to fill
+ */
+void krintc_fill_triangle(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32 y0, i32 x1, i32 y1, i32 x2, i32 y2, u32 color);
+
+/*
  * draw a line inside the buffer with a specific color
  * param pixels, pixel_width, pixel_height - buffer definition
  * param x0, y0 - line start point

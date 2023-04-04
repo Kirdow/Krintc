@@ -73,6 +73,27 @@ size_t line_example(void)
     return 0;
 }
 
+size_t triangle_example(void)
+{
+	u32 *pixels = NULL;
+	uSize width = 400;
+	uSize height = 200;
+	if (!krintc_alloc_data(&pixels, width, height)) return -1;
+
+	krintc_fill(pixels, width, height, 0);
+
+	krintc_fill_triangle(pixels, width, height, 100, 50, 160, 155, 80, 90, 0xFFFFFF);
+	krintc_fill_triangle(pixels, width, height, 300, 50, 360, 90, 280, 155, 0xFFFFFF);
+
+	if (!krintc_save_disk_image(pixels, width, height, "triangle.png"))
+	{
+		printf("Failed to save triangle.png!\n");
+	}
+
+	krintc_free_data(&pixels);
+	return 0;
+}
+
 #define OK(value) ((value) != (size_t)(-1))
 #define LOG_NO_RETURN(id, value) do { printf("Exit(%d): %s\n", id, value); return id; } while(0)
 #define LOG_RETURN(value) LOG_NO_RETURN(0, value)
@@ -115,6 +136,7 @@ int main(int argc, const char *argv[])
 
     if (!OK(japan_example())) LOG_NO_RETURN(-1, "Failed japan example!");
     if (!OK(line_example())) LOG_NO_RETURN(-1, "Failed line example!");
+	if (!OK(triangle_example())) LOG_NO_RETURN(-1, "Failed triangle example!");
 
     bool record = args->record;
     bool test = args->test;
