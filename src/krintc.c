@@ -2,11 +2,34 @@
 #include "vendor/stb_image_write.h"
 #include "mem.h"
 
+#define KRINTC_COLOR_SPLIT(COLOR, INDEX) ((COLOR) >> ((INDEX)*8)) & 0xFF
+#define KRINTC_COLOR_MERGE(CHAN, INDEX) (((CHAN) & 0xFF) << ((INDEX)*8))
+
+static u32 krintc_blend_alpha(u32 c0, u32 c1)
+{
+	u32 r0 = KRINTC_COLOR_SPLIT(c0, 0);
+	u32 g0 = KRINTC_COLOR_SPLIT(c0, 1);
+	u32 b0 = KRINTC_COLOR_SPLIT(c0, 2);
+	u32 a0 = KRINTC_COLOR_SPLIT(c0, 3);
+
+	u32 r1 = KRINTC_COLOR_SPLIT(c1, 0);
+	u32 g1 = KRINTC_COLOR_SPLIT(c1, 1);
+	u32 b1 = KRINTC_COLOR_SPLIT(c1, 2);
+	u32 a1 = KRINTC_COLOR_SPLIT(c1, 3);
+
+	u32 r2 = r0 + (r1 - r0) * a1 / 255;
+	u32 g2 = g0 + (g1 - g0) * a1 / 255;
+	u32 b2 = b0 + (b1 - b0) * a1 / 255;
+	u32 a2 = a0;
+
+	return KRINTC_COLOR_MERGE(a2, 3) | KRINTC_COLOR_MERGE(b2, 2) | KRINTC_COLOR_MERGE(g2, 1) | KRINTC_COLOR_MERGE(r2, 0);
+}
+
 void krintc_fill(u32 *pixels, uSize pixel_width, uSize pixel_height, u32 color)
 {
     for (uSize i = 0; i < pixel_width * pixel_height; i++)
     {
-        pixels[i] = ACOLOR(color);
+        pixels[i] = color;
     }
 }
 
@@ -22,7 +45,7 @@ void krintc_fill_rect(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0
             if (x < 0 || x >= (i32)pixel_height) continue;
             uSize xp = (uSize)x;
 
-            pixels[pixel_width * yp + xp] = ACOLOR(color); 
+            pixels[pixel_width * yp + xp] = krintc_blend_alpha(pixels[pixel_width * yp + xp], color);
         }
     }
 }
@@ -51,7 +74,7 @@ void krintc_fill_circle(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 
 
             if (xr + yr > r2) continue;
 
-            pixels[pixel_width * yp + xp] = ACOLOR(color);
+            pixels[pixel_width * yp + xp] = krintc_blend_alpha(pixels[pixel_width * yp + xp], color);
         }
     }
 }
@@ -148,7 +171,7 @@ void krintc_line(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32
             if (y < 0 || y >= (i32)pixel_height) continue;
             uSize yp = (uSize)y;
 
-            pixels[pixel_width * yp + xp] = ACOLOR(color);
+            pixels[pixel_width * yp + xp] = krintc_blend_alpha(pixels[pixel_width * yp + xp], color);
         }
     }
     else if (KRINTC_ABS(i32, dx) < KRINTC_ABS(i32, dy))
@@ -168,7 +191,7 @@ void krintc_line(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32
             if (x < 0 || x >= (i32)pixel_width) continue;
             uSize xp = (uSize)x;
 
-            pixels[pixel_width * yp + xp] = ACOLOR(color);
+            pixels[pixel_width * yp + xp] = krintc_blend_alpha(pixels[pixel_width * yp + xp], color);
         }
     }
     else
@@ -186,7 +209,7 @@ void krintc_plot(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32
     uSize xp = (uSize)x0;
     uSize yp = (uSize)y0;
 
-    pixels[pixel_width * yp + xp] = color;
+    pixels[pixel_width * yp + xp] = krintc_blend_alpha(pixels[pixel_width * yp + xp], color);
 }
 
 void krintc_explode_rgb(u32 pixel, u32 *red, u32 *green, u32 *blue)

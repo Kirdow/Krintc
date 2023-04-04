@@ -21,8 +21,8 @@ size_t japan_example(void)
     uSize dotSize = height * 3 / 5;
     if (!krintc_alloc_data(&pixels, width, height)) return -1;
 
-    krintc_fill(pixels, width, height, 0xFFFFFF);
-    krintc_fill_circle(pixels, width, height, (i32)(width / 2), (i32)(height / 2), (i32)(dotSize / 2), 0x0000FF);
+    krintc_fill(pixels, width, height, 0xFFFFFFFF);
+    krintc_fill_circle(pixels, width, height, (i32)(width / 2), (i32)(height / 2), (i32)(dotSize / 2), 0xFF0000FF);
 
     if (!krintc_save_disk_image(pixels, width, height, "japan.png"))
     {
@@ -108,6 +108,29 @@ size_t triangle_example(void)
 	return 0;
 }
 
+size_t blend_example(void)
+{
+	u32 *pixels = NULL;
+	uSize width = 400;
+	uSize height = 400;
+	if (!krintc_alloc_data(&pixels, width, height)) return -1;
+
+	krintc_fill(pixels, width, height, 0xFF000000);
+
+	krintc_fill_rect(pixels, width, height, 0, 0, 300, 300, 0xFF00FF00);
+	krintc_fill_rect(pixels, width, height, 100, 100, 400, 400, 0xAA0000FF);
+	krintc_fill_circle(pixels, width, height, 100, 100, 50, 0x77FF0000);
+	krintc_fill_triangle(pixels, width, height, 50, 100, 0, 140, 120, 350, 0xCCFF00FF);
+
+	if (!krintc_save_disk_image(pixels, width, height, "alphablend.png"))
+	{
+		printf("Failed to save alphablend.png!\n");
+	}
+
+	krintc_free_data(&pixels);
+	return 0;
+}
+
 #define OK(value) ((value) != (size_t)(-1))
 #define LOG_NO_RETURN(id, value) do { printf("Exit(%d): %s\n", id, value); return id; } while(0)
 #define LOG_RETURN(value) LOG_NO_RETURN(0, value)
@@ -151,6 +174,7 @@ int main(int argc, const char *argv[])
     if (!OK(japan_example())) LOG_NO_RETURN(-1, "Failed japan example!");
     if (!OK(line_example())) LOG_NO_RETURN(-1, "Failed line example!");
 	if (!OK(triangle_example())) LOG_NO_RETURN(-1, "Failed triangle example!");
+	if (!OK(blend_example())) LOG_NO_RETURN(-1, "Failed blend example!");
 
     bool record = args->record;
     bool test = args->test;
