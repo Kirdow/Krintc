@@ -6,7 +6,10 @@
 #ifdef WIN32
 #include <Windows.h>
 #else
+#define _DEFAULT_SOURCE
 #include <dirent.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #endif
 
 #include "files.h"
@@ -26,8 +29,8 @@ tests_t *tests_load()
     
     ptrlist_t *data = ptrlist_create();
 
-    char *dir_path = file_path_concat(ptr->test_dir, "*.png");
 #ifdef WIN32
+    char *dir_path = file_path_concat(ptr->test_dir, "*.png");
     WIN32_FIND_DATA file_data;
     HANDLE handle = FindFirstFile(dir_path, &file_data);
 
@@ -45,7 +48,8 @@ tests_t *tests_load()
 
     FindClose(handle);
 #else
-    DIR *dir = opendir(dir_path);
+    const char *dir_path = ptr->test_dir;
+	DIR *dir = opendir(dir_path);
     if (dir == NULL)
     {
         printf("Error: tests directory not found\n");
@@ -53,14 +57,21 @@ tests_t *tests_load()
     }
 
     struct dirent *entry;
-    while ((entry = readdir(dir)) != NULL)
+    struct stat info;
+
+	while ((entry = readdir(dir)) != NULL)
     {
-        if (entry->d_type == DT_REG && strcmp(entry->d_name + strlen(entry->d_name) - strlen(ext), ext) == 0)
-        {
-            char *fname = mem_alloc(strlen(entry->d_name) + 1);
-            strcpy(fname, entry->d_name);
-            ptrlist_add_element(data, fname);
-        }
+		if (strstr(entry->d_name, ".png") != NULL) {
+			if (stat(entry->d_name, &info) != 0) {
+				printf("error stat: %s\n", entry->d_name);
+				return NULL;
+			}
+			if (S_ISREG(info.st_mode)) {
+				char *fname = mem_alloc(strlen(entry->d_name) + 1);
+				strcpy(fname, entry->d_name);
+				ptrlist_add_element(data, fname);
+			}
+		}
     }
 
     closedir(dir);
@@ -69,7 +80,9 @@ tests_t *tests_load()
 
     tests_ptr = ptr;
 
+#ifdef WIN32
     mem_free(dir_path);
+#endif
 
     return tests_ptr;
 }

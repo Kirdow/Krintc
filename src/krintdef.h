@@ -1,6 +1,7 @@
 #ifndef _KRINTDEF_C_
 #define _KRINTDEF_C_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
 
