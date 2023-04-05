@@ -1,7 +1,7 @@
 #ifndef _TESTS_H_
 #define _TESTS_H_
 
-#include "ptrlist.h"
+#include "shared/ptrlist.h"
 
 typedef struct {
     ptrlist_t *data;

@@ -11,3 +11,4 @@ run/
 
 # Excludes
 !tests/*.png
+!src/demo/

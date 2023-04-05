@@ -1,6 +1,6 @@
-#include "krintc.h"
+#include "krintc/krintc.h"
 #include "vendor/stb_image_write.h"
-#include "mem.h"
+#include "shared/mem.h"
 
 #define KRINTC_COLOR_SPLIT(COLOR, INDEX) ((COLOR) >> ((INDEX)*8)) & 0xFF
 #define KRINTC_COLOR_MERGE(CHAN, INDEX) (((CHAN) & 0xFF) << ((INDEX)*8))

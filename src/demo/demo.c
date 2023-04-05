@@ -3,13 +3,13 @@
 #include <string.h>
 #include <math.h>
 
-#include "krintc.h"
-#include "point.h"
-#include "strutil.h"
-#include "files.h"
+#include "krintc/krintc.h"
+#include "krintc/point.h"
+#include "shared/strutil.h"
+#include "shared/files.h"
 #include "args.h"
 #include "tests.h"
-#include "mem.h"
+#include "shared/mem.h"
 
 #include "vendor/stb_image.h"
 
