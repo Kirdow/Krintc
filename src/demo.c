@@ -135,10 +135,13 @@ size_t blend_example(void)
 #define LOG_NO_RETURN(id, value) do { printf("Exit(%d): %s\n", id, value); return id; } while(0)
 #define LOG_RETURN(value) LOG_NO_RETURN(0, value)
 
-bool file_copy_into(const char *srcdir, const char *dstdir, const char *filename)
+bool file_copy_into(const char *srcdir, const char *dstdir, const char *filename, const char *filename_dst)
 {
+	if (filename_dst == NULL)
+		filename_dst = filename;
+
     char *srcfile = file_path_concat(srcdir, filename);
-    char *dstfile = file_path_concat(dstdir, filename);
+    char *dstfile = file_path_concat(dstdir, filename_dst);
 
     if (!file_exists(srcfile))
     {
@@ -157,6 +160,17 @@ bool file_copy_into(const char *srcdir, const char *dstdir, const char *filename
 }
 
 bool run_test(const char *result, const char *expected);
+
+char *get_normal_name(const char *name)
+{
+	const char *suffix = "_expected";
+	size_t size = strlen(name) - strlen(suffix);
+	char *filename = mem_alloc(size + 1);
+	memset(filename, 0, sizeof(char) * (size + 1));
+	memcpy(filename, name, size - 4);
+	memcpy(filename + (size - 4), ".png", 4);
+	return filename;
+}
 
 int main(int argc, const char *argv[])
 {
@@ -195,17 +209,25 @@ int main(int argc, const char *argv[])
 
     if (record)
     {
+		const char *suffix = "_expected";
 		ptrlist_t *image_files = file_list_dir(".", ".png");
 		size_t image_count = file_list_size(image_files);
         for (size_t file_index = 0; file_index < image_count; file_index++)
         {
 			const char *filename = file_list_get(image_files, file_index);
-            if (!file_copy_into(".", args->test_dir, filename))
+			size_t len = strlen(filename) + strlen(suffix) + 1;
+            char *filename_expected = mem_alloc(len);
+			memset(filename_expected, 0, sizeof(char) * len);
+			strncpy(filename_expected, filename, strlen(filename) - 4);
+			strcat(filename_expected, suffix);
+			strcat(filename_expected, ".png");
+			if (!file_copy_into(".", args->test_dir, filename, filename_expected))
             {
-                char* dstpath = file_path_concat(args->test_dir, filename);
+                char* dstpath = file_path_concat(args->test_dir, filename_expected);
                 printf("Failed to copy file './%s' into '%s'!\n", filename, dstpath);
                 mem_free(dstpath);
             }
+			mem_free(filename_expected);
         }
 
 		file_list_dir_free(&image_files);
@@ -219,8 +241,9 @@ int main(int argc, const char *argv[])
         for (size_t file_index = 0; file_index < test_count; file_index++)
         {
             const char *filename = tests_get_file(file_index);
-            printf("Running test for '%s'\n", filename);
-            char *result_file = file_path_concat(".", filename);
+			char *nfilename = get_normal_name(filename);
+            printf("Running test for '%s' against '%s'\n", nfilename, filename);
+            char *result_file = file_path_concat(".", nfilename);
             char *test_file = file_path_concat(args->test_dir, filename);
 
             if (!run_test(result_file, test_file))
@@ -233,6 +256,7 @@ int main(int argc, const char *argv[])
                 success++;
             }
 
+			mem_free(nfilename);
             mem_free(result_file);
             mem_free(test_file);
 
