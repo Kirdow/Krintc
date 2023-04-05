@@ -85,6 +85,13 @@ void krintc_line(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32
  */
 void krintc_plot(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32 y0, u32 color);
 
+/*
+ * draw text inside the buffer with a specific color
+ * param pixels, pixel_width, pixel_height - buffer definition
+ * param text - text to draw
+ * param x0, y0 - text point
+ * param color - color to draw
+ */
 void krintc_text(u32 *pixels, uSize pixel_width, uSize pixel_height, const char *text, i32 x0, i32 y0, u32 color);
 
 /*
