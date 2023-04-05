@@ -85,6 +85,8 @@ void krintc_line(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32
  */
 void krintc_plot(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32 y0, u32 color);
 
+void krintc_text(u32 *pixels, uSize pixel_width, uSize pixel_height, const char *text, i32 x0, i32 y0, u32 color);
+
 /*
  * split a pixel into individual channels
  * param pixel - input pixel in 0xBBGGRR format

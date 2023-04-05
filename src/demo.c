@@ -131,6 +131,26 @@ size_t blend_example(void)
 	return 0;
 }
 
+size_t text_example(void)
+{
+	u32 *pixels = NULL;
+	uSize width = 40 + 26 * 4;
+	uSize height = 40;
+	if (!krintc_alloc_data(&pixels, width, height)) return -1;
+
+	krintc_fill(pixels, width, height, 0xFF000000);
+
+	krintc_text(pixels, width, height, "abcdefghijklmnopqrstuvwxyz", 17, 20, 0xFFFFFFFF);
+
+	if (!krintc_save_disk_image(pixels, width, height, "textdraw.png"))
+	{
+		printf("Failed to save textdraw.png!\n");
+	}
+
+	krintc_free_data(&pixels);
+	return 0;
+}
+
 #define OK(value) ((value) != (size_t)(-1))
 #define LOG_NO_RETURN(id, value) do { printf("Exit(%d): %s\n", id, value); return id; } while(0)
 #define LOG_RETURN(value) LOG_NO_RETURN(0, value)
@@ -189,6 +209,7 @@ int main(int argc, const char *argv[])
     if (!OK(line_example())) LOG_NO_RETURN(-1, "Failed line example!");
 	if (!OK(triangle_example())) LOG_NO_RETURN(-1, "Failed triangle example!");
 	if (!OK(blend_example())) LOG_NO_RETURN(-1, "Failed blend example!");
+	if (!OK(text_example())) LOG_NO_RETURN(-1, "Failed text example!");
 
     bool record = args->record;
     bool test = args->test;
