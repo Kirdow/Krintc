@@ -1,9 +1,11 @@
 #ifndef _KRINT_C_
 #define _KRINT_C_
 
-#include "krintdef.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "krintdef.h"
+#include "canvas.h"
 
 /*
  * add alpha to a 24-bit BGR pixel
@@ -38,7 +40,7 @@
  * param pixels, pixel_width, pixel_height - buffer definition
  * param color - color to fill
  */
-void krintc_fill(u32 *pixels, uSize pixel_width, uSize pixel_height, u32 color);
+void krintc_fill(canvas_t canvas, u32 color);
 
 /*
  * fill a rect inside the buffer with a specific color
@@ -47,7 +49,7 @@ void krintc_fill(u32 *pixels, uSize pixel_width, uSize pixel_height, u32 color);
  * param x1, y1 - maximum rect point
  * param color - color to fill
  */
-void krintc_fill_rect(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32 y0, i32 x1, i32 y1, u32 color);
+void krintc_fill_rect(canvas_t canvas, i32 x0, i32 y0, i32 x1, i32 y1, u32 color);
 
 /*
  * fill a circle inside the buffer with a specific color
@@ -56,7 +58,7 @@ void krintc_fill_rect(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0
  * param radius - circle radius (in pixels)
  * param color - color to fill
  */
-void krintc_fill_circle(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 xc, i32 yc, i32 radius, u32 color);
+void krintc_fill_circle(canvas_t canvas, i32 xc, i32 yc, i32 radius, u32 color);
 
 /*
  * fill a triangle inside the buffer with a specific color
@@ -66,7 +68,7 @@ void krintc_fill_circle(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 
  * param x2, y2 - third corner
  * param color - color to fill
  */
-void krintc_fill_triangle(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32 y0, i32 x1, i32 y1, i32 x2, i32 y2, u32 color);
+void krintc_fill_triangle(canvas_t canvas, i32 x0, i32 y0, i32 x1, i32 y1, i32 x2, i32 y2, u32 color);
 
 /*
  * draw a line inside the buffer with a specific color
@@ -75,7 +77,7 @@ void krintc_fill_triangle(u32 *pixels, uSize pixel_width, uSize pixel_height, i3
  * param x1, y1 - line end point
  * param color - color to draw
  */
-void krintc_line(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32 y0, i32 x1, i32 y1, u32 color);
+void krintc_line(canvas_t canvas, i32 x0, i32 y0, i32 x1, i32 y1, u32 color);
 
 /*
  * plot a single pixel inside the buffer with a specific color
@@ -83,7 +85,7 @@ void krintc_line(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32
  * param x0, y0 - pixel point
  * param color - color to plot
  */
-void krintc_plot(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32 y0, u32 color);
+void krintc_plot(canvas_t canvas, i32 x0, i32 y0, u32 color);
 
 /*
  * draw text inside the buffer with a specific color
@@ -92,7 +94,7 @@ void krintc_plot(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32
  * param x0, y0 - text point
  * param color - color to draw
  */
-void krintc_text(u32 *pixels, uSize pixel_width, uSize pixel_height, const char *text, i32 x0, i32 y0, u32 color);
+void krintc_text(canvas_t canvas, const char *text, i32 x0, i32 y0, u32 color);
 
 /*
  * split a pixel into individual channels
@@ -115,19 +117,19 @@ void krintc_implode_color(u32 *pixel, uSize count, u32 *channels);
  * param pixels - output pixel buffer in 0xAABBGGRR format
  * param pixel_width, pixel_height - input buffer dimensions
  */
-uBool krintc_alloc_data(u32 **pixels, uSize pixel_width, uSize pixel_height);
+uBool krintc_alloc_data(canvas_t *canvas, uSize pixel_width, uSize pixel_height);
 
 /*
  * free up a buffer allocated using `krintc_alloc_data`
  * param pixels - pixel buffer to free up
  */
-uBool krintc_free_data(u32 **pixels);
+uBool krintc_free_data(canvas_t *canvas);
 
 /*
  * save image to disk to a specified path
  * param pixels, pixel_width, pixel_height - buffer definition
  * param filename - target filepath for image .png file
  */
-uBool krintc_save_disk_image(const u32 *pixels, uSize pixel_width, uSize pixel_height, const c8 *filename);
+uBool krintc_save_disk_image(const canvas_t canvas, const c8 *filename);
 
 #endif // _KRINT_C_
