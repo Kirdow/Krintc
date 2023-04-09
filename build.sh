@@ -20,6 +20,14 @@ do
     fi
 done
 
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	CDEF="$CDEF -DMACOS"
+fi
+
+if [[ "$OSTYPE" == *"Linux"* ]]; then
+	CDEF="$CDEF -DLINUX"
+fi
+
 if [[ "$OSTYPE" == "msys" ]]; then
     CDEF="$CDEF -DWIN32"
 fi
