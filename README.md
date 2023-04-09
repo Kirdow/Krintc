@@ -37,28 +37,38 @@ If you were to run the code using ``./run.sh --record=true`` you would record ne
 
 If you want to test any changes against existsing tests, run the program using ``./run.sh --test=true``.
 
-Here are a few examples from the [``./tests/``](./tests/) directory.
+<details>
+<summary>Here are a few examples from the [``./tests/``](./tests/) directory.</summary>
 
 ## japan.png
-This generates a correct Japan flag
+<details>
+<summary>This generates a correct Japan flag</summary>
 
-![image of japan flag test](./tests/japan.png "Japan Flag Test")
+![image of japan flag test](./tests/japan_expected.png "Japan Flag Test")
+</details>
 
 ## lines.png
-This generates lines in a circular-ish shape
+<details>
+<summary>This generates lines in a circular-ish shape</summary>
 
-![circular lines test](./tests/lines.png "Circular Lines Test")
+![circular lines test](./tests/lines_expected.png "Circular Lines Test")
+</details>
 
 ## triangle.png
-This generates 6 triangles in a hexagon
+<details>
+<summary>This generates 6 triangles in a hexagon</summary>
 
-![hexagon triangles test](./tests/triangle.png "Hexagon Triangles Test")
+![hexagon triangles test](./tests/triangle_expected.png "Hexagon Triangles Test")
+</details>
 
 ## alphablend.png
-This uses the alpha channel to blend the shapes with each other
+<details>
+<summary>This uses the alpha channel to blend the shapes with each other</summary>
 
-![alpha blend test](./tests/alphablend.png "Alpha Blend Test")
+![alpha blend test](./tests/alphablend_expected.png "Alpha Blend Test")
+</details>
 
+</details>
 # Contributions
 Any help is welcome, but please don't make any major pull requests unless I'm specifically asking for it or approved it in an issue. If you got any questions or thoughts, make an issue.
 
