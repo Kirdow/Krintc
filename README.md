@@ -37,23 +37,21 @@ If you were to run the code using ``./run.sh --record=true`` you would record ne
 
 If you want to test any changes against existsing tests, run the program using ``./run.sh --test=true``.
 
-<details>
-<summary>Here are a few examples from the [``./tests/``](./tests/) directory.</summary>
+Here are a few examples from the [``./tests/``](./tests/) directory.
 
 ## japan.png
-<details>
-<summary>This generates a correct Japan flag</summary>
+
+This generates a correct Japan flag
 
 ![image of japan flag test](./tests/japan_expected.png "Japan Flag Test")
-</details>
 
 ## lines.png
-<details>
-<summary>This generates lines in a circular-ish shape</summary>
+This generates lines in a circular-ish shape
 
 ![circular lines test](./tests/lines_expected.png "Circular Lines Test")
-</details>
 
+<details>
+<summary>**Further examples**</summary>
 ## triangle.png
 <details>
 <summary>This generates 6 triangles in a hexagon</summary>
