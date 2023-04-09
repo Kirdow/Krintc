@@ -15,21 +15,21 @@
 
 size_t japan_example(void)
 {
-    u32 *pixels = NULL;
     uSize height = 800;
     uSize width = height * 3 / 2;
     uSize dotSize = height * 3 / 5;
-    if (!krintc_alloc_data(&pixels, width, height)) return -1;
+    canvas_t canvas;
+	if (!krintc_alloc_data(&canvas, width, height)) return -1;
 
-    krintc_fill(pixels, width, height, 0xFFFFFFFF);
-    krintc_fill_circle(pixels, width, height, (i32)(width / 2), (i32)(height / 2), (i32)(dotSize / 2), 0xFF0000FF);
+    krintc_fill(canvas, 0xFFFFFFFF);
+    krintc_fill_circle(canvas, (i32)(width / 2), (i32)(height / 2), (i32)(dotSize / 2), 0xFF0000FF);
 
-    if (!krintc_save_disk_image(pixels, width, height, "japan.png"))
+    if (!krintc_save_disk_image(canvas, "japan.png"))
     {
         printf("Failed to save japan.png!\n");
     }
 
-    krintc_free_data(&pixels);
+    krintc_free_data(&canvas);
     return 0;
 }
 
@@ -45,12 +45,12 @@ point_t get_point(u32 index, u32 size, u32 total_index)
 
 size_t line_example(void)
 {
-    u32 *pixels = NULL;
     uSize width = 200;
     uSize height = 200;
-    if (!krintc_alloc_data(&pixels, width, height)) return -1;
+    canvas_t canvas;
+	if (!krintc_alloc_data(&canvas, width, height)) return -1;
 
-    krintc_fill(pixels, width, height, 0xFF000000);
+    krintc_fill(canvas, 0xFF000000);
     
     point_t basePosPoint = point_create(100, 100);
     for (u32 index = 0; index < 18; index++)
@@ -60,27 +60,27 @@ size_t line_example(void)
         point_add_self_point(&current, basePosPoint);
         point_add_self_point(&next, basePosPoint);
 
-        krintc_line(pixels, width, height, 100, 100, current.x, current.y, index % 2 ? 0xFFFF0000 : 0xFF00FFFF);
-        krintc_line(pixels, width, height, current.x, current.y, next.x, next.y, 0xFFFFFF00);
+        krintc_line(canvas, 100, 100, current.x, current.y, index % 2 ? 0xFFFF0000 : 0xFF00FFFF);
+        krintc_line(canvas, current.x, current.y, next.x, next.y, 0xFFFFFF00);
     }    
 
-    if (!krintc_save_disk_image(pixels, width, height, "lines.png"))
+    if (!krintc_save_disk_image(canvas, "lines.png"))
     {
         printf("Failed to save lines.png!\n");
     }
 
-    krintc_free_data(&pixels);
+    krintc_free_data(&canvas);
     return 0;
 }
 
 size_t triangle_example(void)
 {
-	u32 *pixels = NULL;
 	uSize width = 800;
 	uSize height = 800;
-	if (!krintc_alloc_data(&pixels, width, height)) return -1;
+    canvas_t canvas;
+	if (!krintc_alloc_data(&canvas, width, height)) return -1;
 
-	krintc_fill(pixels, width, height, 0xFF000000);
+	krintc_fill(canvas, 0xFF000000);
 
 	uSize w2 = width / 2;
 	uSize h2 = height / 2;
@@ -96,58 +96,58 @@ size_t triangle_example(void)
 		point_add_self_point(&current, basePosPoint);
 		point_add_self_point(&next, basePosPoint);
 
-		krintc_fill_triangle(pixels, width, height, w2, h2, current.x, current.y, next.x, next.y, index % 2 ? 0xFF00AAAA : 0xFF00FFFF);
+		krintc_fill_triangle(canvas, w2, h2, current.x, current.y, next.x, next.y, index % 2 ? 0xFF00AAAA : 0xFF00FFFF);
 	}
 	
-	if (!krintc_save_disk_image(pixels, width, height, "triangle.png"))
+	if (!krintc_save_disk_image(canvas, "triangle.png"))
 	{
 		printf("Failed to save triangle.png!\n");
 	}
 
-	krintc_free_data(&pixels);
+	krintc_free_data(&canvas);
 	return 0;
 }
 
 size_t blend_example(void)
 {
-	u32 *pixels = NULL;
 	uSize width = 400;
 	uSize height = 400;
-	if (!krintc_alloc_data(&pixels, width, height)) return -1;
+    canvas_t canvas;
+	if (!krintc_alloc_data(&canvas, width, height)) return -1;
 
-	krintc_fill(pixels, width, height, 0xFF000000);
+	krintc_fill(canvas, 0xFF000000);
 
-	krintc_fill_rect(pixels, width, height, 0, 0, 300, 300, 0xFF00FF00);
-	krintc_fill_rect(pixels, width, height, 100, 100, 400, 400, 0xAA0000FF);
-	krintc_fill_circle(pixels, width, height, 100, 100, 50, 0x77FF0000);
-	krintc_fill_triangle(pixels, width, height, 50, 100, 0, 140, 120, 350, 0xCCFF00FF);
+	krintc_fill_rect(canvas, 0, 0, 300, 300, 0xFF00FF00);
+	krintc_fill_rect(canvas, 100, 100, 400, 400, 0xAA0000FF);
+	krintc_fill_circle(canvas, 100, 100, 50, 0x77FF0000);
+	krintc_fill_triangle(canvas, 50, 100, 0, 140, 120, 350, 0xCCFF00FF);
 
-	if (!krintc_save_disk_image(pixels, width, height, "alphablend.png"))
+	if (!krintc_save_disk_image(canvas, "alphablend.png"))
 	{
 		printf("Failed to save alphablend.png!\n");
 	}
 
-	krintc_free_data(&pixels);
+	krintc_free_data(&canvas);
 	return 0;
 }
 
 size_t text_example(void)
 {
-	u32 *pixels = NULL;
 	uSize width = 40 + 26 * 4;
 	uSize height = 40;
-	if (!krintc_alloc_data(&pixels, width, height)) return -1;
+    canvas_t canvas;
+	if (!krintc_alloc_data(&canvas, width, height)) return -1;
 
-	krintc_fill(pixels, width, height, 0xFF000000);
+	krintc_fill(canvas, 0xFF000000);
 
-	krintc_text(pixels, width, height, "abcdefghijklmnopqrstuvwxyz", 17, 20, 0xFFFFFFFF);
+	krintc_text(canvas, "abcdefghijklmnopqrstuvwxyz", 17, 20, 0xFFFFFFFF);
 
-	if (!krintc_save_disk_image(pixels, width, height, "textdraw.png"))
+	if (!krintc_save_disk_image(canvas, "textdraw.png"))
 	{
 		printf("Failed to save textdraw.png!\n");
 	}
 
-	krintc_free_data(&pixels);
+	krintc_free_data(&canvas);
 	return 0;
 }
 

@@ -30,32 +30,35 @@ static u32 krintc_blend_alpha(u32 c0, u32 c1)
 	return c0;
 }
 
-void krintc_fill(u32 *pixels, uSize pixel_width, uSize pixel_height, u32 color)
+void krintc_fill(canvas_t canvas, u32 color)
 {
-    for (uSize i = 0; i < pixel_width * pixel_height; i++)
-    {
-        pixels[i] = color;
-    }
+	for (uSize y = 0; y < canvas.height; y++)
+	{
+		for (uSize x = 0; x < canvas.width; x++)
+		{
+			canvas.pixels[canvas.stride * y + x] = color;
+		}
+	}
 }
 
-void krintc_fill_rect(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32 y0, i32 x1, i32 y1, u32 color)
+void krintc_fill_rect(canvas_t canvas, i32 x0, i32 y0, i32 x1, i32 y1, u32 color)
 {
     for (i32 y = y0; y < y1; y++)
     {
-        if (y < 0 || y >= (i32)pixel_height) continue;
+        if (y < 0 || y >= (i32)canvas.height) continue;
         uSize yp = (uSize)y;
 
         for (i32 x = x0; x < x1; x++)
         {
-            if (x < 0 || x >= (i32)pixel_height) continue;
+            if (x < 0 || x >= (i32)canvas.width) continue;
             uSize xp = (uSize)x;
 
-            pixels[pixel_width * yp + xp] = krintc_blend_alpha(pixels[pixel_width * yp + xp], color);
+            canvas.pixels[canvas.stride * yp + xp] = krintc_blend_alpha(canvas.pixels[canvas.stride * yp + xp], color);
         }
     }
 }
 
-void krintc_fill_circle(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 xc, i32 yc, i32 radius, u32 color)
+void krintc_fill_circle(canvas_t canvas, i32 xc, i32 yc, i32 radius, u32 color)
 {
     i32 x0 = xc - radius;
     i32 x1 = xc + radius;
@@ -65,21 +68,21 @@ void krintc_fill_circle(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 
 
     for (i32 y = y0; y <= y1; y++)
     {
-        if (y < 0 || y >= (i32)pixel_height) continue;
+        if (y < 0 || y >= (i32)canvas.height) continue;
         uSize yp = (uSize)y;
         uSize yr = (uSize)(y - yc);
         yr *= yr;
 
         for (i32 x = x0; x <= x1; x++)
         {
-            if (x < 0 || x >= (i32)pixel_width) continue;
+            if (x < 0 || x >= (i32)canvas.width) continue;
             uSize xp = (uSize)x;
             uSize xr = (uSize)(x - xc);
             xr *= xr;
 
             if (xr + yr > r2) continue;
 
-            pixels[pixel_width * yp + xp] = krintc_blend_alpha(pixels[pixel_width * yp + xp], color);
+            canvas.pixels[canvas.stride * yp + xp] = krintc_blend_alpha(canvas.pixels[canvas.stride * yp + xp], color);
         }
     }
 }
@@ -94,7 +97,7 @@ static i32 safe_div(i32 a, i32 b, i32 c)
 	return a * b / c;
 }
 
-void krintc_fill_triangle(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32 y0, i32 x1, i32 y1, i32 x2, i32 y2, u32 color)
+void krintc_fill_triangle(canvas_t canvas, i32 x0, i32 y0, i32 x1, i32 y1, i32 x2, i32 y2, u32 color)
 {
 	if (y1 < y0)
 	{
@@ -128,7 +131,7 @@ void krintc_fill_triangle(u32 *pixels, uSize pixel_width, uSize pixel_height, i3
 		i32 y = y0 + safe_div(y2 - y0, i - y0, y2 - y0);
 		if (xLeft > xRight) KRINTC_SWAP(i32, xLeft, xRight);
 
-		krintc_line(pixels, pixel_width, pixel_height, xLeft, y, xRight - 1, y, color);
+		krintc_line(canvas, xLeft, y, xRight - 1, y, color);
 	}
 
 	for (i32 i = y3 + 1; i <= y2; ++i)
@@ -138,23 +141,23 @@ void krintc_fill_triangle(u32 *pixels, uSize pixel_width, uSize pixel_height, i3
 		i32 y = y3 + safe_div(y2 - y3, i - y3, y2 - y3);
 		if (xLeft > xRight) KRINTC_SWAP(i32, xLeft, xRight);
 
-		krintc_line(pixels, pixel_width, pixel_height, xLeft, y, xRight - 1, y, color);
+		krintc_line(canvas, xLeft, y, xRight - 1, y, color);
 	}
 
 #if 0 // for debugging triangles
-	krintc_line(pixels, pixel_width, pixel_height, x0, y0, x2, y2, 0xFF0000FF);
-	krintc_line(pixels, pixel_width, pixel_height, x0, y0, x1, y1, 0xFF00FF00);
-	krintc_line(pixels, pixel_width, pixel_height, x1, y1, x2, y2, 0xFFFF0000);
+	krintc_line(canvas, x0, y0, x2, y2, 0xFF0000FF);
+	krintc_line(canvas, x0, y0, x1, y1, 0xFF00FF00);
+	krintc_line(canvas, x1, y1, x2, y2, 0xFFFF0000);
 
-	krintc_fill_circle(pixels, pixel_width, pixel_height, x3, y3, 6, 0xFFFF00FF);
+	krintc_fill_circle(canvas, x3, y3, 6, 0xFFFF00FF);
 
-	krintc_fill_circle(pixels, pixel_width, pixel_height, x0, y0, 4, 0xFF0000FF);
-	krintc_fill_circle(pixels, pixel_width, pixel_height, x1, y1, 4, 0xFF00FF00);
-	krintc_fill_circle(pixels, pixel_width, pixel_height, x2, y2, 4, 0xFFFF0000);
+	krintc_fill_circle(canvas, x0, y0, 4, 0xFF0000FF);
+	krintc_fill_circle(canvas, x1, y1, 4, 0xFF00FF00);
+	krintc_fill_circle(canvas, x2, y2, 4, 0xFFFF0000);
 #endif
 }
 
-void krintc_line(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32 y0, i32 x1, i32 y1, u32 color)
+void krintc_line(canvas_t canvas, i32 x0, i32 y0, i32 x1, i32 y1, u32 color)
 {
     i32 dx = x1 - x0;
     i32 dy = y1 - y0;
@@ -169,14 +172,14 @@ void krintc_line(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32
 
         for (i32 x = x0; x <= x1; x++)
         {
-            if (x < 0 || x >= (i32)pixel_width) continue;
+            if (x < 0 || x >= (i32)canvas.width) continue;
             uSize xp = (uSize)x;
 
 			i32 y = y0 + ((dx == 0) ? 0 : ((x - x0) * dy / dx));
-            if (y < 0 || y >= (i32)pixel_height) continue;
+            if (y < 0 || y >= (i32)canvas.height) continue;
             uSize yp = (uSize)y;
 
-            pixels[pixel_width * yp + xp] = krintc_blend_alpha(pixels[pixel_width * yp + xp], color);
+            canvas.pixels[canvas.stride * yp + xp] = krintc_blend_alpha(canvas.pixels[canvas.stride * yp + xp], color);
         }
     }
     else if (KRINTC_ABS(i32, dx) < KRINTC_ABS(i32, dy))
@@ -189,14 +192,14 @@ void krintc_line(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32
 
         for (i32 y = y0; y <= y1; y++)
         {
-            if (y < 0 || y >= (i32)pixel_height) continue;
+            if (y < 0 || y >= (i32)canvas.height) continue;
             uSize yp = (uSize)y;
 
 			i32 x = x0 + ((dy == 0) ? 0 : ((y - y0) * dx / dy));
-            if (x < 0 || x >= (i32)pixel_width) continue;
+            if (x < 0 || x >= (i32)canvas.width) continue;
             uSize xp = (uSize)x;
 
-            pixels[pixel_width * yp + xp] = krintc_blend_alpha(pixels[pixel_width * yp + xp], color);
+            canvas.pixels[canvas.stride * yp + xp] = krintc_blend_alpha(canvas.pixels[canvas.stride * yp + xp], color);
         }
     }
     else
@@ -206,27 +209,27 @@ void krintc_line(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32
     }
 }
 
-static void krintc_char(u32 *pixels, uSize pixel_width, uSize pixel_height, char c, i32 x0, i32 y0, u32 color)
+static void krintc_char(canvas_t canvas, char c, i32 x0, i32 y0, u32 color)
 {
 	for (i32 y = 0; y < FONT_HEIGHT; y++)
 	{
 		uSize yp = (uSize)(y + y0);
-		if (yp >= pixel_height) continue;
+		if (yp >= canvas.height) continue;
 
 		for (i32 x = 0; x < FONT_WIDTH; x++)
 		{
 			uSize xp = (uSize)(x + x0);
-			if (xp >= pixel_width) continue;
+			if (xp >= canvas.width) continue;
 
 			if (FONT_MAP[(uSize)(u8)c][(uSize)y][(uSize)x])
 			{
-				pixels[pixel_width * yp + xp] = krintc_blend_alpha(pixels[pixel_width * yp + xp], color);
+				canvas.pixels[canvas.stride * yp + xp] = krintc_blend_alpha(canvas.pixels[canvas.stride * yp + xp], color);
 			}
 		}
 	}
 }
 
-void krintc_text(u32 *pixels, uSize pixel_width, uSize pixel_height, const char *ptr, i32 x0, i32 y0, u32 color)
+void krintc_text(canvas_t canvas, const char *ptr, i32 x0, i32 y0, u32 color)
 {
 	i32 x = 0;
 	i32 y = 0;
@@ -241,7 +244,7 @@ void krintc_text(u32 *pixels, uSize pixel_width, uSize pixel_height, const char 
 		}
 		else
 		{
-			krintc_char(pixels, pixel_width, pixel_height, c, x + x0, y + y0, color);
+			krintc_char(canvas, c, x + x0, y + y0, color);
 			x += FONT_WIDTH_MAP[(uSize)(u8)c] + 1;
 		}
 
@@ -249,15 +252,15 @@ void krintc_text(u32 *pixels, uSize pixel_width, uSize pixel_height, const char 
 	}
 }
 
-void krintc_plot(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32 y0, u32 color)
+void krintc_plot(canvas_t canvas, i32 x0, i32 y0, u32 color)
 {
-    if (x0 < 0 || x0 >= (i32)pixel_width) return;
-    if (y0 < 0 || y0 >= (i32)pixel_height) return;
+    if (x0 < 0 || x0 >= (i32)canvas.width) return;
+    if (y0 < 0 || y0 >= (i32)canvas.height) return;
 
     uSize xp = (uSize)x0;
     uSize yp = (uSize)y0;
 
-    pixels[pixel_width * yp + xp] = krintc_blend_alpha(pixels[pixel_width * yp + xp], color);
+    canvas.pixels[canvas.stride * yp + xp] = krintc_blend_alpha(canvas.pixels[canvas.stride * yp + xp], color);
 }
 
 void krintc_explode_color(u32 pixel, uSize count, u32 *channels)
@@ -280,28 +283,33 @@ void krintc_implode_color(u32 *pixel, uSize count, u32 *channels)
 	*pixel = color;
 }
 
-uBool krintc_alloc_data(u32 **pixels, uSize pixel_width, uSize pixel_height)
+uBool krintc_alloc_data(canvas_t *canvas, uSize pixel_width, uSize pixel_height)
 {
+	if (canvas == NULL) return false;
+
     u32 *data = (u32*)mem_alloc(sizeof(u32) * pixel_width * pixel_height);
     if (data == NULL) return false;
 
-    *pixels = data;
+	canvas->pixels = data;
+	canvas->width = pixel_width;
+	canvas->height = pixel_height;
+	canvas->stride = pixel_width;
     return true;
 }
 
-uBool krintc_free_data(u32 **pixels)
+uBool krintc_free_data(canvas_t *canvas)
 {
-    if (pixels == NULL) return false;
-    u32 *data = *pixels;
-    if (data == NULL) return true;
-    mem_free(data);
-    *pixels = NULL;
+	if (canvas == NULL) return false;
+	u32 *data = canvas->pixels;
+	if (data == NULL) return true;
+	mem_free(data);
+	memset(canvas, 0, sizeof(canvas_t));
     return true;
 }
 
-uBool krintc_save_disk_image(const u32 *pixels, uSize pixel_width, uSize pixel_height, const c8 *filename)
+uBool krintc_save_disk_image(const canvas_t canvas, const c8 *filename)
 {
-    if (!stbi_write_png(filename, (int)pixel_width, (int)pixel_height, 4, pixels, sizeof(uint32_t) * pixel_width))
+    if (!stbi_write_png(filename, (int)canvas.width, (int)canvas.height, 4, canvas.pixels, sizeof(uint32_t) * canvas.stride))
     {
         return false;
     }
