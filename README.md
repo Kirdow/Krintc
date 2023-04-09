@@ -52,6 +52,7 @@ This generates lines in a circular-ish shape
 
 <details>
 <summary>**Further examples**</summary>
+
 ## triangle.png
 <details>
 <summary>This generates 6 triangles in a hexagon</summary>
@@ -65,8 +66,8 @@ This generates lines in a circular-ish shape
 
 ![alpha blend test](./tests/alphablend_expected.png "Alpha Blend Test")
 </details>
-
 </details>
+
 # Contributions
 Any help is welcome, but please don't make any major pull requests unless I'm specifically asking for it or approved it in an issue. If you got any questions or thoughts, make an issue.
 
