@@ -13,6 +13,30 @@
 #include <string.h>
 #include "krintdef.h"
 
+/*
+ * canvas_t implementation of canvas holding a u32 pixel buffer (supposedly BGR or ABGR),
+ *  the dimensions, and a stride
+ *
+ * u32 *pixels - buffer of BGR or ABGR pixels at 8 bits per channel
+ * uSize width - the width in full pixels
+ * uSize height - the height in full pixels
+ * uSize stride - the full length in buffer pixels to get one pixel down in the buffer
+ * 
+ * note: canvas_t is used both with main canvases and sub canvases.
+ *  To instantiate a subcanvas, the pixels variable should point to (y * stride + x),
+ *  and the dimensions should be of the new subcanvas. The stride however should
+ *  remains the same as of the main/sub canvas it's derived upon.
+ *
+ * note: whenever you got a sub canvas derived upon another canvas, it's important
+ *  not to free up the main canvas before the sub canvas, or otherwise not to use,
+ *  the sub canvas after the canvas its based upon is free'd up.
+ *
+ * note: the canvas_t object itself and it's implementation in this file is not
+ *  responsible for the freeing of the pixels variable. Whenever the object is destroyed,
+ *  it's up to the owner of the canvas_t instance to call free on the pixels pointer.
+ *  If this is a sub canvas, you're required to call free on the memory pointed to
+ *  by the main canvas.
+ */
 typedef struct {
 	u32 *pixels;
 	uSize width;
@@ -63,6 +87,13 @@ canvas_t krintc_canvas_create(u32 *pixels, uSize width, uSize height, uSize stri
 canvas_t krintc_canvas_sub(canvas_t *canvas, uSize x, uSize y, uSize width, uSize height);
 
 #ifdef KRINTC_CANVAS_IMPL
+
+/*
+ * !! ATTENTION !!
+ * This is the implementation for canvas_t.
+ * There's no documentation beyond this point.
+ * For proper documentation, see above this point
+ */
 
 #include <stdio.h>
 
