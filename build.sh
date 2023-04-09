@@ -25,7 +25,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 	CDEF="$CDEF -DMACOS"
 fi
 
-if [[ "$OSTYPE" == *"Linux"* ]]; then
+if [[ "$OSTYPE" == *"Linux"* || "$OSTYPE" == *"linux"* ]]; then
 	CDEF="$CDEF -DLINUX"
 fi
 
