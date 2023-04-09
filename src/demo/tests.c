@@ -12,8 +12,8 @@
 #include <unistd.h>
 #endif
 
-#include "files.h"
-#include "mem.h"
+#include "shared/files.h"
+#include "shared/mem.h"
 
 static tests_t *tests_ptr = NULL;
 

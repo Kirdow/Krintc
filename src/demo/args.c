@@ -1,6 +1,6 @@
 #include "args.h"
-#include "strutil.h"
-#include "mem.h"
+#include "shared/strutil.h"
+#include "shared/mem.h"
 
 #include <stdlib.h>
 #define NEXTARG(x) do { i += 1; if (i >= argc) break; x = argv[i]; } while (0);

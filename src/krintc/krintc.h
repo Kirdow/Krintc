@@ -96,17 +96,19 @@ void krintc_text(u32 *pixels, uSize pixel_width, uSize pixel_height, const char 
 
 /*
  * split a pixel into individual channels
- * param pixel - input pixel in 0xBBGGRR format
- * param red, green, blue - output channels
+ * param pixel - input pixel
+ * param count - pixel channel count
+ * param channels - pixel channels pointer
  */
-void krintc_explode_rgb(u32 pixel, u32 *red, u32 *green, u32 *blue);
+void krintc_explode_color(u32 pixel, uSize count, u32 *channels);
 
 /*
  * combine pixel channels into a single pixel
- * param pixel - output pixel in 0xBBGGRR format
- * param red, green, blue - input channels in 0x00 - 0xFF format
+ * param pixel - output pixel
+ * param count - pixel channel count
+ * param channels - pixel channels pointer
  */
-void krintc_implode_rgb(u32 *pixel, u32 red, u32 green, u32 blue);
+void krintc_implode_color(u32 *pixel, uSize count, u32 *channels);
 
 /*
  * allocate a buffer of pixels compatible with Krint.c

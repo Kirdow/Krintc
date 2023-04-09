@@ -1,245 +1,33 @@
-#include "krintc.h"
+#include "krintc/krintc.h"
 #include "vendor/stb_image_write.h"
-#include "mem.h"
+#include "shared/mem.h"
 
 #define KRINTC_COLOR_SPLIT(COLOR, INDEX) ((COLOR) >> ((INDEX)*8)) & 0xFF
 #define KRINTC_COLOR_MERGE(CHAN, INDEX) (((CHAN) & 0xFF) << ((INDEX)*8))
 
-#define FONT_WIDTH 4
-#define FONT_HEIGHT 5
-static u8 FONT_MAP[128][FONT_HEIGHT][FONT_WIDTH] =
-{
-	['a'] = {
-		{0, 1, 1, 0},
-		{0, 0, 0, 1},
-		{0, 1, 1, 1},
-		{1, 0, 0, 1},
-		{0, 1, 1, 0}
-	},
-	['b'] = {
-		{1, 0, 0, 0},
-		{1, 0, 0, 0},
-		{1, 1, 1, 0},
-		{1, 0, 0, 1},
-		{1, 1, 1, 0}
-	},
-	['c'] = {
-		{0, 1, 1, 0},
-		{1, 0, 0, 1},
-		{1, 0, 0, 0},
-		{1, 0, 0, 1},
-		{0, 1, 1, 0}
-	},
-	['d'] = {
-		{0, 0, 0, 1},
-		{0, 0, 0, 1},
-		{0, 1, 1, 1},
-		{1, 0, 0, 1},
-		{0, 1, 1, 1}
-	},
-	['e'] = {
-		{0, 1, 1, 0},
-		{1, 0, 0, 1},
-		{1, 1, 1, 0},
-		{1, 0, 0, 0},
-		{0, 1, 1, 1}
-	},
-	['f'] = {
-		{0, 1, 1, 0},
-		{1, 0, 0, 0},
-		{1, 1, 0, 0},
-		{1, 0, 0, 0},
-		{1, 0, 0, 0}
-	},
-	['g'] = {
-		{0, 1, 1, 0},
-		{1, 0, 0, 1},
-		{0, 1, 1, 1},
-		{0, 0, 0, 1},
-		{1, 1, 1, 0}	
-	},
-	['h'] = {
-		{1, 0, 0, 0},
-		{1, 0, 0, 0},
-		{1, 1, 0, 0},
-		{1, 0, 1, 0},
-		{1, 0, 1, 0}	
-	},
-	['i'] = {
-		{1, 0, 0, 0},
-		{1, 0, 0, 0},
-		{1, 0, 0, 0},
-		{1, 0, 0, 0},
-		{1, 0, 0, 0}	
-	},
-	['j'] = {
-		{0, 0, 1, 0},
-		{0, 0, 1, 0},
-		{0, 0, 1, 0},
-		{0, 0, 1, 0},
-		{1, 1, 0, 0}	
-	},
-	['k'] = {
-		{1, 0, 1, 0},
-		{1, 0, 1, 0},
-		{1, 1, 0, 0},
-		{1, 0, 1, 0},
-		{1, 0, 1, 0}	
-	},
-	['l'] = {
-		{1, 0, 0, 0},
-		{1, 0, 0, 0},
-		{1, 0, 0, 0},
-		{1, 0, 0, 0},
-		{0, 1, 0, 0}	
-	},
-	['m'] = {
-		{0, 1, 1, 0},
-		{1, 1, 0, 1},
-		{1, 0, 0, 1},
-		{1, 0, 0, 1},
-		{1, 0, 0, 1}	
-	},
-	['n'] = {
-		{0, 1, 1, 0},
-		{1, 0, 0, 1},
-		{1, 0, 0, 1},
-		{1, 0, 0, 1},
-		{1, 0, 0, 1}	
-	},
-	['o'] = {
-		{0, 1, 1, 0},
-		{1, 0, 0, 1},
-		{1, 0, 0, 1},
-		{1, 0, 0, 1},
-		{0, 1, 1, 0}	
-	},
-	['p'] = {
-		{1, 1, 1, 0},
-		{1, 0, 0, 1},
-		{1, 1, 1, 0},
-		{1, 0, 0, 0},
-		{1, 0, 0, 0}	
-	},
-	['q'] = {
-		{0, 1, 1, 0},
-		{1, 0, 0, 1},
-		{1, 0, 0, 1},
-		{0, 1, 1, 0},
-		{0, 0, 0, 1}	
-	},
-	['r'] = {
-		{0, 1, 0, 0},
-		{1, 0, 1, 0},
-		{1, 0, 0, 0},
-		{1, 0, 0, 0},
-		{1, 0, 0, 0}	
-	},
-	['s'] = {
-		{0, 1, 1, 0},
-		{1, 0, 0, 0},
-		{0, 1, 1, 0},
-		{0, 0, 0, 1},
-		{0, 1, 1, 0}	
-	},
-	['t'] = {
-		{0, 1, 0, 0},
-		{1, 1, 1, 0},
-		{0, 1, 0, 0},
-		{0, 1, 0, 0},
-		{0, 0, 1, 0}	
-	},
-	['u'] = {
-		{1, 0, 0, 1},
-		{1, 0, 0, 1},
-		{1, 0, 0, 1},
-		{1, 0, 0, 1},
-		{0, 1, 1, 1}	
-	},
-	['v'] = {
-		{1, 0, 0, 1},
-		{1, 0, 0, 1},
-		{1, 0, 0, 1},
-		{1, 0, 0, 1},
-		{0, 1, 1, 0}	
-	},
-	['w'] = {
-		{1, 0, 0, 1},
-		{1, 0, 0, 1},
-		{1, 0, 0, 1},
-		{1, 0, 1, 1},
-		{0, 1, 1, 0}	
-	},
-	['x'] = {
-		{1, 0, 1, 0},
-		{1, 0, 1, 0},
-		{0, 1, 0, 0},
-		{1, 0, 1, 0},
-		{1, 0, 1, 0}	
-	},
-	['y'] = {
-		{1, 0, 1, 0},
-		{1, 0, 1, 0},
-		{0, 1, 0, 0},
-		{1, 0, 0, 0},
-		{1, 0, 0, 0}	
-	},
-	['z'] = {
-		{1, 1, 1, 0},
-		{0, 0, 1, 0},
-		{0, 1, 0, 0},
-		{1, 0, 0, 0},
-		{1, 1, 1, 0}	
-	}
-};
+#include "fontg.inc.h"
 
-static u8 FONT_WIDTH_MAP[128] = {
-	['a'] = 4,
-	['b'] = 4,
-	['c'] = 4,
-	['d'] = 4,
-	['e'] = 4,
-	['f'] = 3,
-	['g'] = 4,
-	['h'] = 3,
-	['i'] = 1,
-	['j'] = 3,
-	['k'] = 3,
-	['l'] = 2,
-	['m'] = 4,
-	['n'] = 4,
-	['o'] = 4,
-	['p'] = 4,
-	['q'] = 4,
-	['r'] = 3,
-	['s'] = 4,
-	['t'] = 3,
-	['u'] = 4,
-	['v'] = 4,
-	['w'] = 4,
-	['x'] = 3,
-	['y'] = 3,
-	['z'] = 4
-};
+#define BLEND_CHANNELS 4
+#define BLEND_ALPHA_CHAN 3
 
 static u32 krintc_blend_alpha(u32 c0, u32 c1)
 {
-	u32 r0 = KRINTC_COLOR_SPLIT(c0, 0);
-	u32 g0 = KRINTC_COLOR_SPLIT(c0, 1);
-	u32 b0 = KRINTC_COLOR_SPLIT(c0, 2);
-	u32 a0 = KRINTC_COLOR_SPLIT(c0, 3);
+	u32 color0[BLEND_CHANNELS];
+	krintc_explode_color(c0, BLEND_CHANNELS, color0);
 
-	u32 r1 = KRINTC_COLOR_SPLIT(c1, 0);
-	u32 g1 = KRINTC_COLOR_SPLIT(c1, 1);
-	u32 b1 = KRINTC_COLOR_SPLIT(c1, 2);
-	u32 a1 = KRINTC_COLOR_SPLIT(c1, 3);
+	u32 color1[BLEND_CHANNELS];
+	krintc_explode_color(c1, BLEND_CHANNELS, color1);
+	
+	for (u32 index = 0; index < BLEND_ALPHA_CHAN; index++)
+	{
+		color0[index] = color0[index]
+			+ (color1[index] - color0[index])
+			* color1[BLEND_ALPHA_CHAN] / 255;
+	}
 
-	u32 r2 = r0 + (r1 - r0) * a1 / 255;
-	u32 g2 = g0 + (g1 - g0) * a1 / 255;
-	u32 b2 = b0 + (b1 - b0) * a1 / 255;
-	u32 a2 = a0;
+	krintc_implode_color(&c0, BLEND_CHANNELS, color0);
 
-	return KRINTC_COLOR_MERGE(a2, 3) | KRINTC_COLOR_MERGE(b2, 2) | KRINTC_COLOR_MERGE(g2, 1) | KRINTC_COLOR_MERGE(r2, 0);
+	return c0;
 }
 
 void krintc_fill(u32 *pixels, uSize pixel_width, uSize pixel_height, u32 color)
@@ -472,18 +260,24 @@ void krintc_plot(u32 *pixels, uSize pixel_width, uSize pixel_height, i32 x0, i32
     pixels[pixel_width * yp + xp] = krintc_blend_alpha(pixels[pixel_width * yp + xp], color);
 }
 
-void krintc_explode_rgb(u32 pixel, u32 *red, u32 *green, u32 *blue)
+void krintc_explode_color(u32 pixel, uSize count, u32 *channels)
 {
-    if (red != NULL) *red = (pixel>>(0*8)) & 0xFF;
-    if (green != NULL) *green = (pixel>>(1*8)) & 0xFF;
-    if (blue != NULL) *blue = (pixel>>(2*8)) & 0xFF;
+	for (uSize index = 0; index < count; index++)
+	{
+		channels[index] = (pixel >> (index * 8)) & 0xFF;
+	}
 }
 
-void krintc_implode_rgb(u32 *pixel, u32 red, u32 green, u32 blue)
+void krintc_implode_color(u32 *pixel, uSize count, u32 *channels)
 {
-    if (pixel == NULL) return;
+	u32 color = 0;
 
-    *pixel = ACOLOR(blue << (2*8) | green << (1*8) | red << (0*8));
+	for (uSize index = 0; index < count; index++)
+	{
+		color |= channels[index] << (index * 8);
+	}
+
+	*pixel = color;
 }
 
 uBool krintc_alloc_data(u32 **pixels, uSize pixel_width, uSize pixel_height)
