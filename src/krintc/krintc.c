@@ -81,13 +81,12 @@ static inline i32 kclamp(i32 v, i32 vmin, i32 vmax)
 	return kmax(vmin, kmin(vmax, v));
 }
 
-void krintc_fill_circle(canvas_t canvas, i32 xc, i32 yc, i32 radius, u32 color)
+void krintc_fill_circle(canvas_t canvas, i32 xc, i32 yc, i32 r, u32 color)
 {
-	i32 x0 = kmax(xc - radius, 0);
-	i32 x1 = kmin(xc + radius, canvas.width - 1);
-	i32 y0 = kmax(yc - radius, 0);
-	i32 y1 = kmin(yc + radius, canvas.height - 1);
-    float r2 = (float)(radius * radius);
+	i32 x0 = kmax(xc - r, 0);
+	i32 x1 = kmin(xc + r, canvas.width - 1);
+	i32 y0 = kmax(yc - r, 0);
+	i32 y1 = kmin(yc + r, canvas.height - 1);
 
 	u32 alpha = (color >> 24) & 0xFF;
 	color &= 0xFFFFFF;
@@ -100,16 +99,16 @@ void krintc_fill_circle(canvas_t canvas, i32 xc, i32 yc, i32 radius, u32 color)
 			{
 				for (i32 ax = -KRINTC_AA_RES; ax <= KRINTC_AA_RES; ax++)
 				{
-					float fy = yp - yc + (float)ay / (float)(KRINTC_AA_RES + 1);
-					float fx = xp - xc + (float)ax / (float)(KRINTC_AA_RES + 1);
-					if (fx*fx + fy*fy <= r2) ++count;
+					i32 res = KRINTC_AA_RES;
+					i32 iy = (yp - yc)*res + ay;
+					i32 ix = (xp - xc)*res + ax;
+					if (ix*ix + iy*iy <= r*r*res*res) ++count;
 				}
 			}
 
 			if (!count) continue;
 
 			u32 aa_alpha = count*alpha/KRINTC_AA_RES_D/KRINTC_AA_RES_D;
-
 			canvas.pixels[canvas.stride * yp + xp] = krintc_blend_alpha(canvas.pixels[canvas.stride * yp + xp], color | (aa_alpha << 24));
         }
     }
