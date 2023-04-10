@@ -10,29 +10,35 @@
 #define BLEND_CHANNELS 4
 #define BLEND_ALPHA_CHAN 3
 
+#define KRINTC_RED(c)	(((c)>>(0*8))&0xFF)
+#define KRINTC_GREEN(c) (((c)>>(1*8))&0xFF)
+#define KRINTC_BLUE(c)  (((c)>>(2*8))&0xFF)
+#define KRINTC_ALPHA(c) (((c)>>(3*8))&0xFF)
+#define KRINTC_ABGR(a, b, g, r) (((a)<<(3*8)) | ((b)<<(2*8)) | ((g)<<(1*8)) | ((r)<<(0*8)))
+#define KRINTC_RGBA(r, g, b, a) KRINTC_ABGR(a, b, g, r)
+
 static inline u32 krintc_blend_alpha_channel(u32 a0, u32 a1)
 {
 	return (a0 + a1) / 2;
 }
 
-static inline u32 krintc_blend_alpha(u32 c0, u32 c1)
+static inline void krintc_blend_alpha(u32 *c0, u32 c1)
 {
-	u32 color0[BLEND_CHANNELS];
-	krintc_explode_color(c0, BLEND_CHANNELS, color0);
+	u32 a0 = KRINTC_ALPHA(*c0);
+	u32 b0 = KRINTC_BLUE(*c0);
+	u32 g0 = KRINTC_GREEN(*c0);
+	u32 r0 = KRINTC_RED(*c0);
 
-	u32 color1[BLEND_CHANNELS];
-	krintc_explode_color(c1, BLEND_CHANNELS, color1);
-	
-	for (u32 index = 0; index < BLEND_ALPHA_CHAN; index++)
-	{
-		color0[index] = color0[index]
-			+ (color1[index] - color0[index])
-			* color1[BLEND_ALPHA_CHAN] / 255;
-	}
+	u32 a1 = KRINTC_ALPHA(c1);
+	u32 b1 = KRINTC_BLUE(c1);
+	u32 g1 = KRINTC_GREEN(c1);
+	u32 r1 = KRINTC_RED(c1);
 
-	krintc_implode_color(&c0, BLEND_CHANNELS, color0);
+	b0 = (b0 * (255 - a1) + b1 * a1) / 255;
+	g0 = (g0 * (255 - a1) + g1 * a1) / 255;
+	r0 = (r0 * (255 - a1) + r1 * a1) / 255;
 
-	return c0;
+	*c0 = KRINTC_ABGR(a0, b0, g0, r0);
 }
 
 void krintc_fill(canvas_t canvas, u32 color)
@@ -58,7 +64,7 @@ void krintc_fill_rect(canvas_t canvas, i32 x0, i32 y0, i32 x1, i32 y1, u32 color
             if (x < 0 || x >= (i32)canvas.width) continue;
             uSize xp = (uSize)x;
 
-            canvas.pixels[canvas.stride * yp + xp] = krintc_blend_alpha(canvas.pixels[canvas.stride * yp + xp], color);
+            krintc_blend_alpha(&canvas.pixels[canvas.stride * yp + xp], color);
         }
     }
 }
@@ -109,7 +115,7 @@ void krintc_fill_circle(canvas_t canvas, i32 xc, i32 yc, i32 r, u32 color)
 			if (!count) continue;
 
 			u32 aa_alpha = count*alpha/KRINTC_AA_RES_D/KRINTC_AA_RES_D;
-			canvas.pixels[canvas.stride * yp + xp] = krintc_blend_alpha(canvas.pixels[canvas.stride * yp + xp], color | (aa_alpha << 24));
+			krintc_blend_alpha(&canvas.pixels[canvas.stride * yp + xp], color | (aa_alpha << 24));
         }
     }
 }
@@ -206,7 +212,7 @@ void krintc_line(canvas_t canvas, i32 x0, i32 y0, i32 x1, i32 y1, u32 color)
             if (y < 0 || y >= (i32)canvas.height) continue;
             uSize yp = (uSize)y;
 
-            canvas.pixels[canvas.stride * yp + xp] = krintc_blend_alpha(canvas.pixels[canvas.stride * yp + xp], color);
+            krintc_blend_alpha(&canvas.pixels[canvas.stride * yp + xp], color);
         }
     }
     else if (KRINTC_ABS(i32, dx) < KRINTC_ABS(i32, dy))
@@ -226,7 +232,7 @@ void krintc_line(canvas_t canvas, i32 x0, i32 y0, i32 x1, i32 y1, u32 color)
             if (x < 0 || x >= (i32)canvas.width) continue;
             uSize xp = (uSize)x;
 
-            canvas.pixels[canvas.stride * yp + xp] = krintc_blend_alpha(canvas.pixels[canvas.stride * yp + xp], color);
+            krintc_blend_alpha(&canvas.pixels[canvas.stride * yp + xp], color);
         }
     }
     else
@@ -250,7 +256,7 @@ static void krintc_char(canvas_t canvas, char c, i32 x0, i32 y0, u32 color)
 
 			if (FONT_MAP[(uSize)(u8)c][(uSize)y][(uSize)x])
 			{
-				canvas.pixels[canvas.stride * yp + xp] = krintc_blend_alpha(canvas.pixels[canvas.stride * yp + xp], color);
+				krintc_blend_alpha(&canvas.pixels[canvas.stride * yp + xp], color);
 			}
 		}
 	}
@@ -287,7 +293,7 @@ void krintc_plot(canvas_t canvas, i32 x0, i32 y0, u32 color)
     uSize xp = (uSize)x0;
     uSize yp = (uSize)y0;
 
-    canvas.pixels[canvas.stride * yp + xp] = krintc_blend_alpha(canvas.pixels[canvas.stride * yp + xp], color);
+    krintc_blend_alpha(&canvas.pixels[canvas.stride * yp + xp], color);
 }
 
 void krintc_explode_color(u32 pixel, uSize count, u32 *channels)
