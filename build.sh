@@ -10,7 +10,7 @@ LDFLAGS="-lm"
 
 mem_flag=false
 memd_flag=false
-
+quiet_flag=false
 for arg in "$@"
 do
     if [[ $arg == "--mem" ]]; then
@@ -18,7 +18,9 @@ do
     elif [[ $arg == "--memd" ]]; then
         mem_flag=true
         memd_flag=true
-    fi
+	elif [[ $arg == "--quiet" ]]; then
+		quiet_flag=true
+	fi
 done
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -46,7 +48,9 @@ if [[ ! -d target ]]; then
 fi
 
 CMD="$CC $CFLAGS $CDEF $INCLUDES -o target/demo $SRC $LDFLAGS"
-echo "$CMD"
+if ! $quiet_flag; then
+	echo "$CMD"
+fi
 $CMD
 
 
