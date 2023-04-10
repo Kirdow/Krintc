@@ -1,15 +1,8 @@
 #include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <math.h>
 
-#include "shared/strutil.h"
 #include "shared/files.h"
-#include "args.h"
 #include "tests.h"
 #include "shared/mem.h"
-
-
 #include "examples.h"
 #include "tests/record.h"
 #include "tests/test.h"
