@@ -10,7 +10,12 @@
 #define BLEND_CHANNELS 4
 #define BLEND_ALPHA_CHAN 3
 
-static u32 krintc_blend_alpha(u32 c0, u32 c1)
+static inline u32 krintc_blend_alpha_channel(u32 a0, u32 a1)
+{
+	return (a0 + a1) / 2;
+}
+
+static inline u32 krintc_blend_alpha(u32 c0, u32 c1)
 {
 	u32 color0[BLEND_CHANNELS];
 	krintc_explode_color(c0, BLEND_CHANNELS, color0);
@@ -58,31 +63,54 @@ void krintc_fill_rect(canvas_t canvas, i32 x0, i32 y0, i32 x1, i32 y1, u32 color
     }
 }
 
+#define KRINTC_AA_RES 2
+#define KRINTC_AA_RES_D (KRINTC_AA_RES*2+1)
+
+static inline i32 kmin(i32 a, i32 b)
+{
+	return a < b ? a : b;
+}
+
+static inline i32 kmax(i32 a, i32 b)
+{
+	return a > b ? a : b;
+}
+
+static inline i32 kclamp(i32 v, i32 vmin, i32 vmax)
+{
+	return kmax(vmin, kmin(vmax, v));
+}
+
 void krintc_fill_circle(canvas_t canvas, i32 xc, i32 yc, i32 radius, u32 color)
 {
-    i32 x0 = xc - radius;
-    i32 x1 = xc + radius;
-    i32 y0 = yc - radius;
-    i32 y1 = yc + radius;
-    uSize r2 = (uSize)(radius * radius);
+	i32 x0 = kmax(xc - radius, 0);
+	i32 x1 = kmin(xc + radius, canvas.width - 1);
+	i32 y0 = kmax(yc - radius, 0);
+	i32 y1 = kmin(yc + radius, canvas.height - 1);
+    float r2 = (float)(radius * radius);
 
-    for (i32 y = y0; y <= y1; y++)
+	u32 alpha = (color >> 24) & 0xFF;
+	color &= 0xFFFFFF;
+    for (i32 yp = y0; yp <= y1; yp++)
     {
-        if (y < 0 || y >= (i32)canvas.height) continue;
-        uSize yp = (uSize)y;
-        uSize yr = (uSize)(y - yc);
-        yr *= yr;
-
-        for (i32 x = x0; x <= x1; x++)
+        for (i32 xp = x0; xp <= x1; xp++)
         {
-            if (x < 0 || x >= (i32)canvas.width) continue;
-            uSize xp = (uSize)x;
-            uSize xr = (uSize)(x - xc);
-            xr *= xr;
+			u32 count = 0;
+			for (i32 ay = -KRINTC_AA_RES; ay <= KRINTC_AA_RES; ay++)
+			{
+				for (i32 ax = -KRINTC_AA_RES; ax <= KRINTC_AA_RES; ax++)
+				{
+					float fy = yp - yc + (float)ay / (float)(KRINTC_AA_RES + 1);
+					float fx = xp - xc + (float)ax / (float)(KRINTC_AA_RES + 1);
+					if (fx*fx + fy*fy <= r2) ++count;
+				}
+			}
 
-            if (xr + yr > r2) continue;
+			if (!count) continue;
 
-            canvas.pixels[canvas.stride * yp + xp] = krintc_blend_alpha(canvas.pixels[canvas.stride * yp + xp], color);
+			u32 aa_alpha = count*alpha/KRINTC_AA_RES_D/KRINTC_AA_RES_D;
+
+			canvas.pixels[canvas.stride * yp + xp] = krintc_blend_alpha(canvas.pixels[canvas.stride * yp + xp], color | (aa_alpha << 24));
         }
     }
 }
