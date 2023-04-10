@@ -17,6 +17,9 @@
 #define KRINTC_ABGR(a, b, g, r) (((a)<<(3*8)) | ((b)<<(2*8)) | ((g)<<(1*8)) | ((r)<<(0*8)))
 #define KRINTC_RGBA(r, g, b, a) KRINTC_ABGR(a, b, g, r)
 
+#define KRINTC_CP(c, x, y) (c).pixels[(c).stride * (y) + (x)]
+#define KRINTC_BLENDA krintc_blend_alpha
+
 static inline u32 krintc_blend_alpha_channel(u32 a0, u32 a1)
 {
 	return (a0 + a1) / 2;
@@ -64,7 +67,7 @@ void krintc_fill_rect(canvas_t canvas, i32 x0, i32 y0, i32 x1, i32 y1, u32 color
             if (x < 0 || x >= (i32)canvas.width) continue;
             uSize xp = (uSize)x;
 
-            krintc_blend_alpha(&canvas.pixels[canvas.stride * yp + xp], color);
+			KRINTC_BLENDA(&KRINTC_CP(canvas, xp, yp), color);
         }
     }
 }
@@ -115,7 +118,7 @@ void krintc_fill_circle(canvas_t canvas, i32 xc, i32 yc, i32 r, u32 color)
 			if (!count) continue;
 
 			u32 aa_alpha = count*alpha/KRINTC_AA_RES_D/KRINTC_AA_RES_D;
-			krintc_blend_alpha(&canvas.pixels[canvas.stride * yp + xp], color | (aa_alpha << 24));
+			KRINTC_BLENDA(&KRINTC_CP(canvas, xp, yp), color | (aa_alpha << 24));
         }
     }
 }
@@ -212,7 +215,7 @@ void krintc_line(canvas_t canvas, i32 x0, i32 y0, i32 x1, i32 y1, u32 color)
             if (y < 0 || y >= (i32)canvas.height) continue;
             uSize yp = (uSize)y;
 
-            krintc_blend_alpha(&canvas.pixels[canvas.stride * yp + xp], color);
+			KRINTC_BLENDA(&KRINTC_CP(canvas, xp, yp), color);
         }
     }
     else if (KRINTC_ABS(i32, dx) < KRINTC_ABS(i32, dy))
@@ -232,7 +235,7 @@ void krintc_line(canvas_t canvas, i32 x0, i32 y0, i32 x1, i32 y1, u32 color)
             if (x < 0 || x >= (i32)canvas.width) continue;
             uSize xp = (uSize)x;
 
-            krintc_blend_alpha(&canvas.pixels[canvas.stride * yp + xp], color);
+			KRINTC_BLENDA(&KRINTC_CP(canvas, xp, yp), color);
         }
     }
     else
@@ -256,7 +259,7 @@ static void krintc_char(canvas_t canvas, char c, i32 x0, i32 y0, u32 color)
 
 			if (FONT_MAP[(uSize)(u8)c][(uSize)y][(uSize)x])
 			{
-				krintc_blend_alpha(&canvas.pixels[canvas.stride * yp + xp], color);
+				KRINTC_BLENDA(&KRINTC_CP(canvas, xp, yp), color);
 			}
 		}
 	}
@@ -293,7 +296,7 @@ void krintc_plot(canvas_t canvas, i32 x0, i32 y0, u32 color)
     uSize xp = (uSize)x0;
     uSize yp = (uSize)y0;
 
-    krintc_blend_alpha(&canvas.pixels[canvas.stride * yp + xp], color);
+	KRINTC_BLENDA(&KRINTC_CP(canvas, xp, yp), color);
 }
 
 void krintc_explode_color(u32 pixel, uSize count, u32 *channels)
