@@ -7,6 +7,14 @@
 
 #include "fontg.inc.h"
 
+typedef struct {
+	i32 x0, y0;
+	i32 x1, y1;
+
+	i32 ox0, oy0;
+	i32 ox1, oy1;
+} norm_rect_t;
+
 #define BLEND_CHANNELS 4
 #define BLEND_ALPHA_CHAN 3
 
@@ -20,10 +28,7 @@
 #define KRINTC_CP(c, x, y) (c).pixels[(c).stride * (y) + (x)]
 #define KRINTC_BLENDA krintc_blend_alpha
 
-static inline u32 krintc_blend_alpha_channel(u32 a0, u32 a1)
-{
-	return (a0 + a1) / 2;
-}
+static inline norm_rect_t krintc_normalize_rect(canvas_t *canvas, i32 x0, i32 y0, i32 x1, i32 y1, bool inclusive);
 
 static inline void krintc_blend_alpha(u32 *c0, u32 c1)
 {
@@ -92,16 +97,13 @@ static inline i32 kclamp(i32 v, i32 vmin, i32 vmax)
 
 void krintc_fill_circle(canvas_t canvas, i32 xc, i32 yc, i32 r, u32 color)
 {
-	i32 x0 = kmax(xc - r, 0);
-	i32 x1 = kmin(xc + r, canvas.width - 1);
-	i32 y0 = kmax(yc - r, 0);
-	i32 y1 = kmin(yc + r, canvas.height - 1);
+	norm_rect_t nr = krintc_normalize_rect(&canvas, xc - r, yc - r, xc + r, yc + r, false);
 
 	u32 alpha = (color >> 24) & 0xFF;
 	color &= 0xFFFFFF;
-    for (i32 yp = y0; yp <= y1; yp++)
+    for (i32 yp = nr.y0; yp <= nr.y1; yp++)
     {
-        for (i32 xp = x0; xp <= x1; xp++)
+        for (i32 xp = nr.x0; xp <= nr.x1; xp++)
         {
 			u32 count = 0;
 			for (i32 ay = -KRINTC_AA_RES; ay <= KRINTC_AA_RES; ay++)
@@ -351,5 +353,23 @@ uBool krintc_save_disk_image(const canvas_t canvas, const c8 *filename)
     }
 
     return true;
+}
+
+static inline norm_rect_t krintc_normalize_rect(canvas_t *canvas, i32 x0, i32 y0, i32 x1, i32 y1, bool inclusive)
+{
+	i32 nx0 = kmax(0, x0);
+	i32 ny0 = kmax(0, y0);
+	i32 nx1 = kmin(canvas->width - !inclusive, x1);
+	i32 ny1 = kmin(canvas->height - !inclusive, y1);
+
+	norm_rect_t rect = {
+		.x0 = nx0, .y0 = ny0,
+		.x1 = nx1, .y1 = ny1,
+
+		.ox0 = x0, .oy0 = y0,
+		.ox1 = x1, .oy1 = y1
+	};
+
+	return rect;
 }
 
